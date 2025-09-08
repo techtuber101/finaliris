@@ -3,7 +3,7 @@ from core.prompts.prompt import SYSTEM_PROMPT
 # Suna default configuration - simplified and centralized
 SUNA_CONFIG = {
     "name": "Iris",
-    "description": "Suna is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
+    "description": "Iris is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
     "avatar": "🌞",
     "avatar_color": "#F59E0B",
     "model": "google/gemini-2.5-pro",

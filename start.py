@@ -184,11 +184,11 @@ def main():
 
         if action == "stop":
             subprocess.run(["docker", "compose", "down"], shell=IS_WINDOWS)
-            print(f"\n{Colors.GREEN}✅ All Suna services stopped.{Colors.ENDC}")
+            print(f"\n{Colors.GREEN}✅ All Iris services stopped.{Colors.ENDC}")
         else:
             subprocess.run(["docker", "compose", "up", "-d"], shell=IS_WINDOWS)
-            print(f"\n{Colors.GREEN}✅ All Suna services started.{Colors.ENDC}")
-            print(f"{Colors.CYAN}🌐 Access Suna at: http://localhost:3000{Colors.ENDC}")
+            print(f"\n{Colors.GREEN}✅ All Iris services started.{Colors.ENDC}")
+            print(f"{Colors.CYAN}🌐 Access Iris at: http://localhost:3000{Colors.ENDC}")
 
 
 if __name__ == "__main__":
