@@ -1,7 +1,7 @@
 'use client';
 import { HeroVideoSection } from '@/components/home/sections/hero-video-section';
 import { siteConfig } from '@/lib/home';
-import { ArrowRight, Github, X, AlertCircle, Square } from 'lucide-react';
+import { ArrowRight, X, AlertCircle, Square } from 'lucide-react';
 import { FlickeringGrid } from '@/components/home/ui/flickering-grid';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useState, useEffect, useRef, FormEvent } from 'react';
@@ -421,7 +421,7 @@ export function HeroSection() {
               </button> */}
             </div>
             <DialogDescription className="text-muted-foreground">
-              Sign in or create an account to talk with Suna
+              Sign in or create an account to talk with Iris
             </DialogDescription>
           </DialogHeader>
 

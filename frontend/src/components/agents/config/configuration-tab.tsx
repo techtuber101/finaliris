@@ -130,10 +130,10 @@ export function ConfigurationTab({
                 <div className="text-primary-600">
                   <KortixLogo size={20} />
                 </div>
-                <span className="font-semibold text-primary-800">Suna Default Agent</span>
+                <span className="font-semibold text-primary-800">Iris Default Agent</span>
               </div>
               <p className="text-sm text-primary-700">
-                This is Suna's default agent with centrally managed system prompt and tools.
+                This is Iris's default agent with centrally managed system prompt and tools.
                 You can customize integrations, knowledge base, playbooks, and triggers to personalize your experience.
               </p>
             </div>
