@@ -1,12 +1,37 @@
 services:
+  # Caddy reverse proxy with SSL termination
+  caddy:
+    image: caddy:2-alpine
+    container_name: irisvision-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - /var/log/caddy:/var/log/caddy
+    networks:
+      - irisvision-network
+    depends_on:
+      - frontend
+      - backend
+    environment:
+      - CADDY_INGRESS_NETWORKS=irisvision-network
+
   redis:
     image: redis:7-alpine
+    container_name: irisvision-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
       - ./backend/services/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: redis-server /usr/local/etc/redis/redis.conf --save 60 1 --loglevel warning
+    networks:
+      - irisvision-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -19,6 +44,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: irisvision-backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -30,6 +57,8 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_SSL=False
+    networks:
+      - irisvision-network
     depends_on:
       redis:
         condition: service_healthy
@@ -42,6 +71,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: irisvision-worker
+    restart: unless-stopped
     command: uv run dramatiq --skip-logging --processes 4 --threads 4 run_agent_background
     volumes:
       - ./backend/.env:/app/.env:ro
@@ -52,6 +83,8 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_SSL=False
+    networks:
+      - irisvision-network
     depends_on:
       redis:
         condition: service_healthy
@@ -61,12 +94,33 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_URL=https://irisvision.ai
+        - NEXT_PUBLIC_APP_URL=https://irisvision.ai
+        - NEXT_PUBLIC_BACKEND_URL=https://irisvision.ai/api
+        - NEXT_PUBLIC_ENV_MODE=local
+    container_name: irisvision-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
       - ./frontend/.env.local:/app/.env.local:ro
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_URL=https://irisvision.ai
+      - NEXT_PUBLIC_APP_URL=https://irisvision.ai
+      - NEXT_PUBLIC_BACKEND_URL=https://irisvision.ai/api
+      - NEXT_PUBLIC_ENV_MODE=local
+    networks:
+      - irisvision-network
     depends_on:
       - backend
 
+networks:
+  irisvision-network:
+    driver: bridge
+
 volumes:
   redis_data:
+  caddy_data:
+  caddy_config:

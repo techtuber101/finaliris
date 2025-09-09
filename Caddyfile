@@ -1,0 +1,83 @@
+# Caddyfile for irisvision.ai
+# This configuration provides SSL termination and reverse proxy for the Suna AI application
+
+# Main domain configuration
+irisvision.ai {
+    # Enable automatic HTTPS
+    tls {
+        # Caddy will automatically obtain and renew SSL certificates
+        # No additional configuration needed for Let's Encrypt
+    }
+
+    # Reverse proxy to frontend
+    reverse_proxy frontend:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 5s
+        
+        # Headers for proper proxying
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # API routes go to backend
+    handle /api/* {
+        reverse_proxy backend:8000 {
+            # Health check
+            health_uri /api/health
+            health_interval 30s
+            health_timeout 5s
+            
+            # Headers for proper proxying
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # WebSocket support for real-time features
+    handle /ws/* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Security headers
+    header {
+        # Security headers
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # CORS headers for API
+        Access-Control-Allow-Origin "https://irisvision.ai"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+        Access-Control-Allow-Credentials "true"
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/irisvision.ai.log
+        format json
+    }
+}
+
+# Redirect www to non-www
+www.irisvision.ai {
+    redir https://irisvision.ai{uri} permanent
+}
+
+# Health check endpoint for load balancer
+:80 {
+    respond /health "OK" 200
+}
