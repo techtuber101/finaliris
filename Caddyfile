@@ -1,42 +1,105 @@
-# Caddy v2, no extra modules required
-
-irisvision.ai, www.irisvision.ai {
-	encode zstd gzip
-
-	# Health check (HTTPS)
-	@health path /health
-	respond @health "OK" 200
-
-	# Redirect www → apex
-	@www host www.irisvision.ai
-	redir @www https://irisvision.ai{uri} permanent
-
-	# API + WebSockets → backend
-	@api path /api/* /ws/*
-	reverse_proxy @api backend:8000
-
-	# Everything else → frontend (Next.js)
-	reverse_proxy frontend:3000
-
-	# Security headers
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-		X-Content-Type-Options "nosniff"
-		X-Frame-Options "DENY"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		X-XSS-Protection "1; mode=block"
-	}
-
-	# Access logs to stdout (recommended in containers)
-	log {
-		output stdout
-		format json
-	}
+{
+  # Global options
+  # Set a contact email for ACME and tune logging + server timeouts
+  email admin@irisvision.ai
+  log {
+    level WARN
+    output file /var/log/caddy/caddy.log {
+      roll_size 10MiB
+      roll_keep 5
+      roll_keep_for 7d
+    }
+    format json
+  }
+  servers {
+    protocols h1 h2
+    timeouts {
+      read_body 30s
+      read_header 10s
+      write 90s
+      idle 120s
+    }
+  }
 }
 
-# Optional: Plain HTTP listener for health + redirect to HTTPS
+# Primary site (HTTPS)
+irisvision.ai, www.irisvision.ai {
+  encode zstd gzip
+
+  # Health check route
+  @health path /health
+  respond @health "OK" 200
+
+  # Redirect www → apex
+  @www host www.irisvision.ai
+  redir @www https://irisvision.ai{uri} permanent
+
+  # API + WebSockets → backend
+  @api path /api/* /ws/*
+  reverse_proxy @api backend:8000 {
+    # Active health checks to avoid proxying to unhealthy upstreams
+    health_uri /health
+    health_interval 10s
+    health_timeout 2s
+    fail_duration 10s
+
+    # Preserve important headers and scheme for upstream
+    header_up X-Forwarded-Proto {scheme}
+    header_up Host {host}
+
+    # Robust transport config (HTTP/1.1 and h2c for containers)
+    transport http {
+      keepalive 64
+      versions h2c 1.1
+      compression off
+    }
+  }
+
+  # Everything else → frontend (Next.js)
+  reverse_proxy frontend:3000 {
+    header_up X-Forwarded-Proto {scheme}
+    header_up Host {host}
+    transport http {
+      keepalive 64
+      versions h2c 1.1
+    }
+  }
+
+  # Security headers
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    # X-Frame-Options is kept for compatibility; prefer CSP frame-ancestors in app
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    X-XSS-Protection "1; mode=block"
+    -Server
+  }
+
+  # Request access logs → file (keeps console clean)
+  log {
+    output file /var/log/caddy/access.log {
+      roll_size 10MiB
+      roll_keep 5
+      roll_keep_for 7d
+    }
+    format json
+  }
+}
+
+# Plain HTTP listener for health + redirect to HTTPS
 :80 {
-	@health path /health
-	respond @health "OK" 200
-	redir https://irisvision.ai{uri}
+  @health path /health
+  respond @health "OK" 200
+  redir https://irisvision.ai{uri}
+
+  # Access logs for HTTP → file
+  log {
+    output file /var/log/caddy/access_http.log {
+      roll_size 10MiB
+      roll_keep 5
+      roll_keep_for 7d
+    }
+    format json
+  }
 }

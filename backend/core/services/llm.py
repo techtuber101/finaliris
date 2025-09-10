@@ -257,14 +257,9 @@ def _configure_thinking(params: Dict[str, Any], model_name: str, enable_thinking
         logger.info(f"xAI thinking enabled with reasoning_effort='{effort_level}'")
 
 def _add_fallback_model(params: Dict[str, Any], model_name: str, messages: List[Dict[str, Any]]) -> None:
-    """Add fallback model to the parameters."""
-    fallback_model = get_openrouter_fallback(model_name)
-    if fallback_model:
-        params["fallbacks"] = [{
-            "model": fallback_model,
-            "messages": messages,
-        }]
-        logger.debug(f"Added OpenRouter fallback for model: {model_name} to {fallback_model}")
+    """Add fallback model to the parameters - DISABLED to enforce single model usage."""
+    # Fallback logic disabled - enforce single model usage only
+    logger.debug(f"Fallback logic disabled - using only model: {model_name}")
 
 def _add_tools_config(params: Dict[str, Any], tools: Optional[List[Dict[str, Any]]], tool_choice: str) -> None:
     """Add tools configuration to parameters."""

@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Set
 from .ai_models import Model, ModelProvider, ModelCapability, ModelPricing
 
-DEFAULT_FREE_MODEL = "Kimi K2"
+DEFAULT_FREE_MODEL = "Gemini 2.5 Pro"
 DEFAULT_PREMIUM_MODEL = "Gemini 2.5 Pro"
 
 class ModelRegistry:
@@ -30,7 +30,7 @@ class ModelRegistry:
             tier_availability=["paid"],
             priority=99,
             recommended=False,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -50,7 +50,7 @@ class ModelRegistry:
             ),
             tier_availability=["paid"],
             priority=93,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -70,7 +70,7 @@ class ModelRegistry:
             ),
             tier_availability=["paid"],
             priority=90,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -91,7 +91,7 @@ class ModelRegistry:
             ),
             tier_availability=["paid"],
             priority=99,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -111,7 +111,7 @@ class ModelRegistry:
             ),
             tier_availability=["free", "paid"],
             priority=85,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -130,10 +130,10 @@ class ModelRegistry:
                 input_cost_per_million_tokens=1.25,
                 output_cost_per_million_tokens=10.00
             ),
-            tier_availability=["paid"],
+            tier_availability=["free", "paid"],  # Available for both tiers
             priority=100,
             recommended=True,
-            enabled=True
+            enabled=True  # Only model enabled - Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -152,7 +152,7 @@ class ModelRegistry:
             ),
             tier_availability=["paid"],
             priority=94,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
         
         self.register(Model(
@@ -171,7 +171,7 @@ class ModelRegistry:
             ),
             tier_availability=["free", "paid"],
             priority=100,
-            enabled=True
+            enabled=False  # Disabled - only using Gemini 2.5 Pro
         ))
 
         """

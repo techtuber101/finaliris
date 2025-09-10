@@ -39,7 +39,7 @@ interface ModelStore {
   resetToDefault: (subscriptionStatus: SubscriptionStatus) => void;
 }
 
-const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
+const DEFAULT_FREE_MODEL_ID = 'google/gemini-2.5-pro';
 const DEFAULT_PREMIUM_MODEL_ID = 'google/gemini-2.5-pro';
 
 export const useModelStore = create<ModelStore>()(

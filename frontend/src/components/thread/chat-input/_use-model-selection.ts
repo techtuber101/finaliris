@@ -43,65 +43,10 @@ export interface CustomModel {
 }
 
 export const MODELS = {
-  'claude-sonnet-4': { 
-    tier: 'premium',
-    priority: 99, 
-    recommended: false,
-    lowQuality: false
-  },
-  'gpt-5': { 
-    tier: 'premium', 
-    priority: 99,
-    recommended: false,
-    lowQuality: false
-  },
   'google/gemini-2.5-pro': { 
-    tier: 'premium', 
-    priority: 100,
-    recommended: true,
-    lowQuality: false
-  },
-  'grok-4': { 
-    tier: 'premium', 
-    priority: 94,
-    recommended: false,
-    lowQuality: false
-  },
-  'sonnet-3.7': { 
-    tier: 'premium', 
-    priority: 93, 
-    recommended: false,
-    lowQuality: false
-  },
-  'sonnet-3.5': { 
-    tier: 'premium', 
-    priority: 90,
-    recommended: false,
-    lowQuality: false
-  },
-
-  'moonshotai/kimi-k2': { 
     tier: 'free', 
     priority: 100,
     recommended: true,
-    lowQuality: false
-  },
-  'deepseek': { 
-    tier: 'free', 
-    priority: 95,
-    recommended: false,
-    lowQuality: false
-  },
-  'qwen3': { 
-    tier: 'free', 
-    priority: 90,
-    recommended: false,
-    lowQuality: false
-  },
-  'gpt-5-mini': { 
-    tier: 'free', 
-    priority: 85,
-    recommended: false,
     lowQuality: false
   },
 };

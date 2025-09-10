@@ -152,9 +152,9 @@ function PublicDashboard() {
           {/* Minimal footer */}
           <div className="w-full px-4 py-6 border-t border-border text-xs text-muted-foreground">
             <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
-              <a href="/terms" className="hover:underline">Terms</a>
+              <a href="/legal?tab=terms" className="hover:underline">Terms</a>
               <span>•</span>
-              <a href="/privacy" className="hover:underline">Privacy</a>
+              <a href="/legal?tab=privacy" className="hover:underline">Privacy</a>
             </div>
           </div>
 
