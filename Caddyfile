@@ -43,26 +43,13 @@ irisvision.ai, www.irisvision.ai {
     health_timeout 2s
     fail_duration 10s
 
-    # Preserve important headers and scheme for upstream
-    header_up X-Forwarded-Proto {scheme}
+    # Preserve the original Host header for app logic
     header_up Host {host}
-
-    # Robust transport config (HTTP/1.1 and h2c for containers)
-    transport http {
-      keepalive 64
-      versions h2c 1.1
-      compression off
-    }
   }
 
   # Everything else → frontend (Next.js)
   reverse_proxy frontend:3000 {
-    header_up X-Forwarded-Proto {scheme}
     header_up Host {host}
-    transport http {
-      keepalive 64
-      versions h2c 1.1
-    }
   }
 
   # Security headers
