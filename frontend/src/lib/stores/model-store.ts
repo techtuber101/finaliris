@@ -108,7 +108,11 @@ export const useModelStore = create<ModelStore>()(
         selectedModel: state.selectedModel,
         customModels: state.customModels,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Error rehydrating model store:', error);
+          return;
+        }
         if (state) {
           state.setHasHydrated(true);
         }

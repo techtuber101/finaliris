@@ -5,6 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
+// Client-side only wrapper to prevent hydration issues
+function ClientOnlyErrorBoundary({ children, ...props }: ErrorBoundaryProps) {
+  const [hasMounted, setHasMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return <>{children}</>;
+  }
+
+  return <ErrorBoundary {...props}>{children}</ErrorBoundary>;
+}
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
@@ -23,6 +38,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Don't catch hydration errors - let them bubble up
+    if (error.message?.includes('Hydration') || error.message?.includes('hydration')) {
+      throw error;
+    }
+    
     return {
       hasError: true,
       error,
@@ -31,6 +51,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error('Error stack:', error.stack);
+    console.error('Component stack:', errorInfo.componentStack);
     
     this.setState({
       error,
@@ -75,7 +97,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   <h4 className="text-sm font-medium text-red-800 mb-2">Error Details:</h4>
                   <pre className="text-xs text-red-700 whitespace-pre-wrap">
                     {this.state.error.message}
-                    {this.state.error.stack && `\n\n${this.state.error.stack}`}
+                    {this.state.error.stack && `\n\nStack Trace:\n${this.state.error.stack}`}
+                    {this.state.errorInfo?.componentStack && `\n\nComponent Stack:\n${this.state.errorInfo.componentStack}`}
                   </pre>
                 </div>
               )}
@@ -123,3 +146,6 @@ export function useErrorHandler() {
 
   return { captureError, resetError };
 }
+
+// Export the client-only version as default
+export default ClientOnlyErrorBoundary;

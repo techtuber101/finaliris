@@ -4,7 +4,8 @@ import { ThemeProvider } from 'next-themes';
 import { useState, createContext, useEffect } from 'react';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ReactQueryProvider } from '@/providers/react-query-provider';
-import { ErrorBoundary } from '@/components/error-boundary';
+import { DeleteOperationProvider } from '@/contexts/DeleteOperationContext';
+import ErrorBoundary from '@/components/error-boundary';
 
 export interface ParsedTag {
   tagName: string;
@@ -41,13 +42,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <ToolCallsContext.Provider value={{ toolCalls, setToolCalls }}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ReactQueryProvider>
-              {children}
-            </ReactQueryProvider>
-          </ThemeProvider>
-        </ToolCallsContext.Provider>
+        <DeleteOperationProvider>
+          <ToolCallsContext.Provider value={{ toolCalls, setToolCalls }}>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <ReactQueryProvider>
+                {children}
+              </ReactQueryProvider>
+            </ThemeProvider>
+          </ToolCallsContext.Provider>
+        </DeleteOperationProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
