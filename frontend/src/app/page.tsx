@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { SidebarLeft, FloatingMobileMenuButton } from '@/components/sidebar/sidebar-left';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils';
 // Shared key used by the real dashboard to auto-submit after login
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
-function PublicDashboard() {
+function PublicDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [value, setValue] = useState('');
@@ -152,9 +153,9 @@ function PublicDashboard() {
           {/* Minimal footer */}
           <div className="w-full px-4 py-6 border-t border-border text-xs text-muted-foreground">
             <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
-              <a href="/legal?tab=terms" className="hover:underline">Terms</a>
+              <Link href="/legal?tab=terms" className="hover:underline">Terms</Link>
               <span>•</span>
-              <a href="/legal?tab=privacy" className="hover:underline">Privacy</a>
+              <Link href="/legal?tab=privacy" className="hover:underline">Privacy</Link>
             </div>
           </div>
 
@@ -163,6 +164,14 @@ function PublicDashboard() {
         </SidebarInset>
       </SidebarProvider>
     </div>
+  );
+}
+
+function PublicDashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PublicDashboardContent />
+    </Suspense>
   );
 }
 

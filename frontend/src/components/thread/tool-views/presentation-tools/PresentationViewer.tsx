@@ -140,7 +140,7 @@ export function PresentationViewer({
   };
 
   // Load metadata.json for the presentation with retry logic
-  const loadMetadata = async (retryCount = 0, maxRetries = 5) => {
+  const loadMetadata = useCallback(async (retryCount = 0, maxRetries = 5) => {
     if (!extractedPresentationName || !project?.sandbox?.sandbox_url) return;
     
     setIsLoadingMetadata(true);
@@ -212,7 +212,7 @@ export function PresentationViewer({
         setBackgroundRetryInterval(interval);
       }
     }
-  };
+  }, [extractedPresentationName, project?.sandbox?.sandbox_url, backgroundRetryInterval]);
 
   useEffect(() => {
     // Clear any existing background retry when dependencies change
@@ -221,7 +221,7 @@ export function PresentationViewer({
       setBackgroundRetryInterval(null);
     }
     loadMetadata();
-  }, [extractedPresentationName, project?.sandbox?.sandbox_url, toolContent]);
+  }, [extractedPresentationName, project?.sandbox?.sandbox_url, toolContent, backgroundRetryInterval, loadMetadata]);
 
   // Cleanup background retry interval on unmount
   useEffect(() => {
@@ -237,6 +237,35 @@ export function PresentationViewer({
     setHasScrolledToCurrentSlide(false);
   }, [toolContent, currentSlideNumber]);
 
+  // Helper function to scroll to current slide
+  const scrollToCurrentSlide = useCallback((delay: number = 200) => {
+    if (!currentSlideNumber || !metadata) return;
+    
+    setTimeout(() => {
+      const slideElement = document.getElementById(`slide-${currentSlideNumber}`);
+      
+      if (slideElement) {
+        slideElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+      } else {
+        // Fallback: try again after a longer delay if element not found yet
+        setTimeout(() => {
+          const retryElement = document.getElementById(`slide-${currentSlideNumber}`);
+          if (retryElement) {
+            retryElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            });
+          }
+        }, 500);
+      }
+    }, delay);
+  }, [currentSlideNumber, metadata]);
+
   // Scroll to current slide when metadata loads or when tool content changes
   useEffect(() => {
     if (metadata && currentSlideNumber && !hasScrolledToCurrentSlide) {
@@ -244,11 +273,13 @@ export function PresentationViewer({
       scrollToCurrentSlide(800);
       setHasScrolledToCurrentSlide(true);
     }
-  }, [metadata, currentSlideNumber, hasScrolledToCurrentSlide]);
+  }, [metadata, currentSlideNumber, hasScrolledToCurrentSlide, scrollToCurrentSlide]);
 
-  const slides = metadata ? Object.entries(metadata.slides)
+  const slides = useMemo(() => {
+    return metadata ? Object.entries(metadata.slides)
       .map(([num, slide]) => ({ number: parseInt(num), ...slide }))
-    .sort((a, b) => a.number - b.number) : [];
+      .sort((a, b) => a.number - b.number) : [];
+  }, [metadata]);
 
   // Additional effect to scroll when slides are actually rendered
   useEffect(() => {
@@ -261,7 +292,7 @@ export function PresentationViewer({
 
       return () => clearTimeout(timer);
     }
-  }, [slides.length, currentSlideNumber, metadata, hasScrolledToCurrentSlide]);
+  }, [slides.length, currentSlideNumber, metadata, hasScrolledToCurrentSlide, scrollToCurrentSlide]);
 
   // Scroll-based slide detection with proper edge handling
   useEffect(() => {
@@ -338,34 +369,6 @@ export function PresentationViewer({
     };
   }, [slides]);
 
-  // Helper function to scroll to current slide
-  const scrollToCurrentSlide = (delay: number = 200) => {
-    if (!currentSlideNumber || !metadata) return;
-    
-    setTimeout(() => {
-      const slideElement = document.getElementById(`slide-${currentSlideNumber}`);
-      
-      if (slideElement) {
-        slideElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'nearest'
-        });
-      } else {
-        // Fallback: try again after a longer delay if element not found yet
-        setTimeout(() => {
-          const retryElement = document.getElementById(`slide-${currentSlideNumber}`);
-          if (retryElement) {
-            retryElement.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'nearest'
-            });
-          }
-        }, 500);
-      }
-    }, delay);
-  };
 
   // Create a refresh timestamp when metadata changes
   const refreshTimestamp = useMemo(() => Date.now(), [metadata]);

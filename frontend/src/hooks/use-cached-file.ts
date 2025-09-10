@@ -280,7 +280,7 @@ export function useCachedFile<T = string>(
         setLocalBlobUrl(null);
       }
     };
-  }, [sandboxId, filePath, options.contentType]);
+  }, [sandboxId, filePath, options.contentType, getFileContent, localBlobUrl]);
 
   // Expose the cache manipulation functions
   return {

@@ -466,6 +466,8 @@ export function useAgentStream(
       callbacks,
       finalizeStream,
       updateStatus,
+      addContentThrottled,
+      flushPendingContent,
     ],
   );
 
@@ -616,7 +618,7 @@ export function useAgentStream(
       // Only set mounted flag to false to prevent new operations
       // Streams will be cleaned up when they naturally complete or on explicit stop
     };
-  }, []); // Empty dependency array for mount/unmount effect
+  }, [flushPendingContent]); // Empty dependency array for mount/unmount effect
 
   // --- Public Functions ---
 

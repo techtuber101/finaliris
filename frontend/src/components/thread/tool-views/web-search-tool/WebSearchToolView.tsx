@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   Search,
   CheckCircle,
@@ -138,7 +139,7 @@ export function WebSearchToolView({
                         rel="noopener noreferrer"
                         className="group relative overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 hover:border-blue-300 dark:hover:border-blue-700 transition-colors shadow-sm hover:shadow-md"
                       >
-                        <img
+                        <Image
                           src={image}
                           alt={`Search result ${idx + 1}`}
                           className="object-cover w-full h-32 group-hover:opacity-90 transition-opacity"
@@ -147,6 +148,9 @@ export function WebSearchToolView({
                             target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
                             target.classList.add("p-4");
                           }}
+                          width={300}
+                          height={128}
+                          unoptimized
                         />
                         <div className="absolute top-0 right-0 p-1">
                           <Badge variant="secondary" className="bg-black/60 hover:bg-black/70 text-white border-none shadow-md">
@@ -188,13 +192,16 @@ export function WebSearchToolView({
                       <div className="p-4">
                         <div className="flex items-start gap-3 mb-2">
                           {favicon && (
-                            <img
+                            <Image
                               src={favicon}
                               alt=""
                               className="w-5 h-5 mt-1 rounded"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
+                              width={20}
+                              height={20}
+                              unoptimized
                             />
                           )}
                           <div className="flex-1 min-w-0">
