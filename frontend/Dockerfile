@@ -37,6 +37,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Ensure build-time envs are available to Next.js
+# If .env.local exists in the repo, include it so "next build" can inline
+# NEXT_PUBLIC_* variables into the client bundle.
+COPY .env.local .env.local
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 ENV NEXT_TELEMETRY_DISABLED=1

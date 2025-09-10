@@ -103,10 +103,11 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend/.env.local:/app/.env.local:ro
+    # Load runtime environment variables (including Supabase) for the Next.js server
+    env_file:
+      - ./frontend/.env.local
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - NEXT_PUBLIC_URL=https://irisvision.ai
       - NEXT_PUBLIC_APP_URL=https://irisvision.ai
       - NEXT_PUBLIC_BACKEND_URL=https://irisvision.ai/api
