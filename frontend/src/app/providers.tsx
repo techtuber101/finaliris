@@ -4,7 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { useState, createContext, useEffect } from 'react';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ReactQueryProvider } from '@/providers/react-query-provider';
-import { dehydrate, QueryClient } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 export interface ParsedTag {
   tagName: string;
@@ -37,18 +37,18 @@ export const ToolCallsContext = createContext<{
 export function Providers({ children }: { children: React.ReactNode }) {
   // Shared state for tool calls across the app
   const [toolCalls, setToolCalls] = useState<ParsedTag[]>([]);
-  const queryClient = new QueryClient();
-  const dehydratedState = dehydrate(queryClient);
 
   return (
-    <AuthProvider>
-      <ToolCallsContext.Provider value={{ toolCalls, setToolCalls }}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ReactQueryProvider dehydratedState={dehydratedState}>
-            {children}
-          </ReactQueryProvider>
-        </ThemeProvider>
-      </ToolCallsContext.Provider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToolCallsContext.Provider value={{ toolCalls, setToolCalls }}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ReactQueryProvider>
+              {children}
+            </ReactQueryProvider>
+          </ThemeProvider>
+        </ToolCallsContext.Provider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
