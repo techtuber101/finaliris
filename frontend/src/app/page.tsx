@@ -169,15 +169,3 @@ function PublicDashboard() {
 export default function HomePage() {
   return <PublicDashboard />;
 }
-
-export const metadata = {
-  title: 'Iris — Chat Dashboard',
-  description: 'Public dashboard preview. Sign in to start chatting.',
-  openGraph: {
-    title: 'Iris — Chat Dashboard',
-    description: 'Public dashboard preview. Sign in to start chatting.',
-    url: '/',
-    siteName: 'Iris',
-  },
-};
-
