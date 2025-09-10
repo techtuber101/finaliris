@@ -44,6 +44,14 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   )
 
+  // Fast-path: redirect authenticated users from home to dashboard (no flicker)
+  if (request.nextUrl.pathname === '/' && user) {
+    const targetUrl = new URL('/dashboard', request.url)
+    // Preserve any query params (e.g., marketing links with ?q=)
+    targetUrl.search = request.nextUrl.search
+    return NextResponse.redirect(targetUrl)
+  }
+
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/auth', request.url)

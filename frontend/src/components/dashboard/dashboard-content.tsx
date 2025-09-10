@@ -122,6 +122,28 @@ export function DashboardContent() {
   const enabledEnvironment = isStagingMode() || isLocalMode();
 
   React.useEffect(() => {
+    // Handle prefill prompt from URL (e.g., after auth handoff)
+    const prefill = searchParams.get('prefill');
+    if (prefill) {
+      try {
+        // Decode and sanitize; cap length to avoid huge URLs
+        const decoded = decodeURIComponent(prefill);
+        const safe = decoded.replace(/\s+/g, ' ').slice(0, 4000);
+        if (safe) {
+          setInputValue(safe);
+          setAutoSubmit(true);
+        }
+      } catch (e) {
+        // ignore malformed URI
+      }
+      // Clean the URL to avoid resubmission on refresh
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('prefill');
+      router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  React.useEffect(() => {
     if (agents.length > 0) {
       initializeFromAgents(agents, undefined, setSelectedAgent);
     }
