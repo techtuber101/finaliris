@@ -9,10 +9,10 @@ export function HeroVideoSection() {
     >
       <SectionHeader>
         <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1">
-          Watch Intelligence in Motion
+          See the magic yourself
         </h2>
         <p className="text-muted-foreground text-center text-balance font-medium">
-          Watch how Suna executes complex workflows with precision and autonomy
+          Watch how Iris plans, executes, and delivers — automatically
         </p>
       </SectionHeader>
 
@@ -21,14 +21,14 @@ export function HeroVideoSection() {
           <HeroVideoDialog
             className="block dark:hidden"
             animationStyle="from-center"
-            videoSrc="https://www.youtube.com/embed/Jnxq0osSg2c?si=k8ddEM8h8lver20s"
+            videoSrc="https://youtube.com"
             thumbnailSrc="/thumbnail-light.png"
             thumbnailAlt="Hero Video"
           />
           <HeroVideoDialog
             className="hidden dark:block"
             animationStyle="from-center"
-            videoSrc="https://www.youtube.com/embed/Jnxq0osSg2c?si=k8ddEM8h8lver20s"
+            videoSrc="https://youtube.com"
             thumbnailSrc="/thumbnail-dark.png"
             thumbnailAlt="Hero Video"
           />

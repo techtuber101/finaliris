@@ -284,9 +284,11 @@ export const Feature = ({
                 <AccordionItem
                   key={item.id}
                   className={cn(
-                    'relative data-[state=open]:bg-white dark:data-[state=open]:bg-[#27272A] rounded-lg data-[state=closed]:rounded-none data-[state=closed]:border-0',
-                    'dark:data-[state=open]:shadow-[0px_0px_0px_1px_rgba(249,250,251,0.06),0px_0px_0px_1px_var(--color-zinc-800,#27272A),0px_1px_2px_-0.5px_rgba(0,0,0,0.24),0px_2px_4px_-1px_rgba(0,0,0,0.24)]',
-                    'data-[state=open]:shadow-[0px_0px_1px_0px_rgba(0,0,0,0.16),0px_1px_2px_-0.5px_rgba(0,0,0,0.16)]',
+                    'relative rounded-lg data-[state=closed]:rounded-none data-[state=closed]:border-0',
+                    // Keep background transparent; only line animates
+                    'data-[state=open]:bg-transparent dark:data-[state=open]:bg-transparent',
+                  'dark:data-[state=open]:shadow-[0px_0px_0px_1px_rgba(249,250,251,0.06),0px_0px_0px_1px_var(--color-zinc-800,#27272A),0px_1px_2px_-0.5px_rgba(0,0,0,0.24),0px_2px_4px_-1px_rgba(0,0,0,0.24)]',
+                  'data-[state=open]:shadow-[0px_0px_1px_0px_rgba(0,0,0,0.16),0px_1px_2px_-0.5px_rgba(0,0,0,0.16)]',
                   )}
                   value={`item-${index}`}
                 >
@@ -334,10 +336,10 @@ export const Feature = ({
                       }}
                     />
                   </div>
-                  <AccordionTrigger className="font-semibold text-lg tracking-tight text-left">
+                  <AccordionTrigger className="font-semibold text-lg tracking-tight text-left data-[state=open]:text-foreground">
                     {item.title}
                   </AccordionTrigger>
-                  <AccordionContent className="text-sm font-medium">
+                  <AccordionContent className="text-sm font-medium data-[state=open]:text-foreground">
                     {item.content}
                   </AccordionContent>
                 </AccordionItem>

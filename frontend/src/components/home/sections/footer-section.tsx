@@ -116,26 +116,18 @@ export function FooterSection() {
           </div>
         </div>
       </div>
-      <Link
-        href="https://www.youtube.com/watch?v=nuf5BF1jvjQ"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block w-full h-48 md:h-64 relative mt-24 z-0 cursor-pointer"
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-background z-10 from-40%" />
-        <div className="absolute inset-0 ">
-          <FlickeringGrid
-            text={tablet ? 'Agents' : 'Agents Agents Agents'}
-            fontSize={tablet ? 60 : 90}
-            className="h-full w-full"
-            squareSize={2}
-            gridGap={tablet ? 2 : 3}
-            color="#6B7280"
-            maxOpacity={0.3}
-            flickerChance={0.1}
-          />
+      <div className="w-full mt-20 mb-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-accent/60 px-6 py-10">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08),transparent_60%)]" />
+            <div className="relative z-10 flex items-center justify-center">
+              <span className="text-3xl md:text-4xl font-semibold tracking-tight">
+                © Iris 2026
+              </span>
+            </div>
+          </div>
         </div>
-      </Link>
+      </div>
     </footer>
   );
 }

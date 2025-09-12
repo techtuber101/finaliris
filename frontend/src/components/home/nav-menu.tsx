@@ -167,13 +167,7 @@ export function NavMenu() {
             </a>
           </li>
         ))}
-        {isReady && (
-          <motion.li
-            animate={{ left, width }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="absolute inset-0 my-1.5 rounded-full bg-accent/60 border border-border"
-          />
-        )}
+        {/* Remove background highlight for a fully transparent navbar */}
       </ul>
     </div>
   );

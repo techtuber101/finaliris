@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 4000",
+    "dev:3000": "next dev --turbopack --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -108,7 +109,7 @@
     "diff": "^7.0.0",
     "extract-colors": "^4.2.0",
     "file-saver": "^2.0.5",
-    "flags": "^3.2.0",
+    "flags": "^4.0.1",
     "framer-motion": "^12.6.5",
     "geist": "^1.2.1",
     "gsap": "^3.13.0",

@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
+          supabaseResponse.headers.set('X-Daytona-Skip-Preview-Warning', 'true')
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -49,19 +50,25 @@ export async function middleware(request: NextRequest) {
     const targetUrl = new URL('/dashboard', request.url)
     // Preserve any query params (e.g., marketing links with ?q=)
     targetUrl.search = request.nextUrl.search
-    return NextResponse.redirect(targetUrl)
+    const resp = NextResponse.redirect(targetUrl)
+    resp.headers.set('X-Daytona-Skip-Preview-Warning', 'true')
+    return resp
   }
 
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/auth', request.url)
     redirectUrl.searchParams.set('returnUrl', request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+    const resp = NextResponse.redirect(redirectUrl)
+    resp.headers.set('X-Daytona-Skip-Preview-Warning', 'true')
+    return resp
   }
 
   // Redirect authenticated users away from auth routes
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const resp = NextResponse.redirect(new URL('/dashboard', request.url))
+    resp.headers.set('X-Daytona-Skip-Preview-Warning', 'true')
+    return resp
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
@@ -76,6 +83,7 @@ export async function middleware(request: NextRequest) {
   //    return myNewResponse
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
+  supabaseResponse.headers.set('X-Daytona-Skip-Preview-Warning', 'true')
   return supabaseResponse
 }
 
