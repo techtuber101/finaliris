@@ -188,21 +188,24 @@ export function SidebarLeft({
               </span>
             </SidebarMenuButton>
           </Link>
-          <Link href="/tasks">
-            <SidebarMenuButton 
-              className={cn('touch-manipulation mt-1', {
-                'bg-accent text-accent-foreground font-medium': pathname === '/tasks',
-              })} 
-              onClick={() => {
-                if (isMobile) setOpenMobile(false);
-              }}
-            >
-              <Zap className="h-4 w-4 mr-1" />
-              <span className="flex items-center justify-between w-full">
-                Tasks
-              </span>
-            </SidebarMenuButton>
-          </Link>
+          {/* Temporarily hidden - Tasks button */}
+          {false && (
+            <Link href="/tasks">
+              <SidebarMenuButton 
+                className={cn('touch-manipulation mt-1', {
+                  'bg-accent text-accent-foreground font-medium': pathname === '/tasks',
+                })} 
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}
+              >
+                <Zap className="h-4 w-4 mr-1" />
+                <span className="flex items-center justify-between w-full">
+                  Tasks
+                </span>
+              </SidebarMenuButton>
+            </Link>
+          )}
           {(
             <SidebarMenu>
               <Collapsible
@@ -263,7 +266,8 @@ export function SidebarLeft({
           )}
 
         </SidebarGroup>
-        <NavAgents />
+        {/* Temporarily hidden - Agents section */}
+        {false && <NavAgents />}
       </SidebarContent>
       {state !== 'collapsed' && (
         <div className="px-3 py-2">
