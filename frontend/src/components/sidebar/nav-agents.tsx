@@ -47,6 +47,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ThreadWithProject, GroupedThreads } from '@/hooks/react-query/sidebar/use-sidebar';
 import { processThreadsWithProjects, useDeleteMultipleThreads, useDeleteThread, useProjects, useThreads, groupThreadsByDate } from '@/hooks/react-query/sidebar/use-sidebar';
 import { projectKeys, threadKeys } from '@/hooks/react-query/sidebar/keys';
+import { useProjectsRealtime } from '@/hooks/react-query/sidebar/use-projects-realtime';
 
 // Component for date group headers
 const DateGroupHeader: React.FC<{ dateGroup: string; count: number }> = ({ dateGroup, count }) => {
@@ -74,6 +75,8 @@ const ThreadItem: React.FC<{
   handleDeleteThread: (threadId: string, threadName: string) => void;
   setSelectedItem: (item: { threadId: string; projectId: string } | null) => void;
   setShowShareModal: (show: boolean) => void;
+  displayName: string;
+  showCaret: boolean;
 }> = ({ 
   thread, 
   isActive, 
@@ -84,7 +87,9 @@ const ThreadItem: React.FC<{
   handleDeleteThread, 
   setSelectedItem, 
   setShowShareModal,
-  isMobile 
+  isMobile,
+  displayName,
+  showCaret
 }) => {
   return (
     <SidebarMenuItem key={`thread-${thread.threadId}`} className="group/row">
@@ -109,7 +114,12 @@ const ThreadItem: React.FC<{
             {isThreadLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2 flex-shrink-0" />
             ) : null}
-            <span className="truncate">{thread.projectName}</span>
+            <span className="truncate inline-flex items-center">
+              {displayName}
+              {showCaret ? (
+                <span className="ml-0.5 inline-block w-0.5 h-4 bg-current opacity-70 animate-pulse" />
+              ) : null}
+            </span>
           </Link>
           
           {/* Checkbox - only visible on hover of this specific area */}
@@ -215,6 +225,9 @@ export function NavAgents() {
     error: threadsError
   } = useThreads();
 
+  // Realtime: keep projects list in sync with backend updates (e.g., background renames)
+  useProjectsRealtime();
+
   const { mutate: deleteThreadMutation, isPending: isDeletingSingle } = useDeleteThread();
   const {
     mutate: deleteMultipleThreadsMutation,
@@ -226,6 +239,62 @@ export function NavAgents() {
       processThreadsWithProjects(threads, projects) : [];
 
   const groupedThreads: GroupedThreads = groupThreadsByDate(combinedThreads);
+
+  // Typing animation state for project names after rename
+  const [typingStates, setTypingStates] = useState<Record<string, { current: string; target: string }>>({});
+  const typingTimers = useRef<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const { projectId, newName } = (event as CustomEvent).detail || {};
+      if (!projectId || typeof newName !== 'string') return;
+
+      // Clear existing timer if present
+      const existing = typingTimers.current.get(projectId);
+      if (existing) {
+        window.clearInterval(existing);
+        typingTimers.current.delete(projectId);
+      }
+
+      // Initialize typing state
+      setTypingStates(prev => ({ ...prev, [projectId]: { current: '', target: newName } }));
+
+      // Start typewriter interval
+      const id = window.setInterval(() => {
+        setTypingStates(prev => {
+          const state = prev[projectId];
+          if (!state) return prev;
+          if (state.current.length >= state.target.length) {
+            // Done: stop interval and schedule cleanup
+            const timerId = typingTimers.current.get(projectId);
+            if (timerId) {
+              window.clearInterval(timerId);
+              typingTimers.current.delete(projectId);
+            }
+            // Briefly keep caret visible, then remove typing state
+            setTimeout(() => {
+              setTypingStates(prev2 => {
+                const { [projectId]: _omit, ...rest } = prev2;
+                return rest;
+              });
+            }, 700);
+            return prev;
+          }
+          const next = state.target.slice(0, state.current.length + 1);
+          return { ...prev, [projectId]: { ...state, current: next } };
+        });
+      }, 25);
+      typingTimers.current.set(projectId, id);
+    };
+
+    window.addEventListener('project-renamed', handler as EventListener);
+    return () => {
+      window.removeEventListener('project-renamed', handler as EventListener);
+      // Cleanup timers
+      typingTimers.current.forEach((id) => window.clearInterval(id));
+      typingTimers.current.clear();
+    };
+  }, []);
 
   const handleDeletionProgress = (completed: number, total: number) => {
     const percentage = (completed / total) * 100;
@@ -549,6 +618,9 @@ export function NavAgents() {
                       const isActive = pathname?.includes(thread.threadId) || false;
                       const isThreadLoading = loadingThreadId === thread.threadId;
                       const isSelected = selectedThreads.has(thread.threadId);
+                      const typing = typingStates[thread.projectId];
+                      const displayName = typing ? typing.current : thread.projectName;
+                      const showCaret = Boolean(typing);
 
                       return (
                         <ThreadItem
@@ -566,6 +638,8 @@ export function NavAgents() {
                           handleDeleteThread={handleDeleteThread}
                           setSelectedItem={setSelectedItem}
                           setShowShareModal={setShowShareModal}
+                          displayName={displayName}
+                          showCaret={showCaret}
                         />
                       );
                     })}
