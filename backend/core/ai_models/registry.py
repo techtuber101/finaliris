@@ -115,6 +115,26 @@ class ModelRegistry:
         ))
         
         self.register(Model(
+            id="openai/gpt-5-nano",
+            name="GPT-5 Nano",
+            provider=ModelProvider.OPENAI,
+            aliases=["gpt-5-nano", "GPT-5 Nano"],
+            context_window=400_000,
+            capabilities=[
+                ModelCapability.CHAT,
+                ModelCapability.FUNCTION_CALLING,
+                ModelCapability.STRUCTURED_OUTPUT,
+            ],
+            pricing=ModelPricing(
+                input_cost_per_million_tokens=0.05,  # Very cheap for nano
+                output_cost_per_million_tokens=0.20
+            ),
+            tier_availability=["free", "paid"],
+            priority=90,
+            enabled=True  # Enable for title generation tasks
+        ))
+        
+        self.register(Model(
             id="gemini/gemini-2.5-pro",
             name="Gemini 2.5 Pro",
             provider=ModelProvider.GOOGLE,
