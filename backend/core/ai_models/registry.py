@@ -89,9 +89,9 @@ class ModelRegistry:
                 input_cost_per_million_tokens=1.25,
                 output_cost_per_million_tokens=10.00
             ),
-            tier_availability=["paid"],
+            tier_availability=["free", "paid"],
             priority=99,
-            enabled=False  # Disabled - only using Gemini 2.5 Pro
+            enabled=True  # Enable GPT-5 for agent usage
         ))
         
         self.register(Model(
