@@ -137,19 +137,51 @@ async def generate_and_update_project_name(project_id: str, prompt: str):
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}]
 
         logger.debug(f"Calling LLM ({model_name}) for project {project_id} naming.")
-        response = await make_llm_api_call(messages=messages, model_name=model_name, max_tokens=20, temperature=0.7)
+        response = await make_llm_api_call(
+            messages=messages,
+            model_name=model_name,
+            max_tokens=20,
+            temperature=0.7,
+        )
+
+        # LiteLLM may return a ModelResponse object; normalize to dict for parsing
+        response_dict = None
+        try:
+            if hasattr(response, 'model_dump'):
+                response_dict = response.model_dump()
+            elif hasattr(response, 'dict'):
+                response_dict = response.dict()
+            elif isinstance(response, dict):
+                response_dict = response
+            else:
+                logger.debug(f"Unexpected LLM response type: {type(response)}")
+        except Exception as ser_err:
+            logger.warning(f"Failed to serialize LLM response: {ser_err}")
 
         generated_name = None
-        if response and response.get('choices') and response['choices'][0].get('message'):
-            raw_name = response['choices'][0]['message'].get('content', '').strip()
-            cleaned_name = raw_name.strip('\'" \n\t')
-            if cleaned_name:
-                generated_name = cleaned_name
-                logger.debug(f"LLM generated name for project {project_id}: '{generated_name}'")
-            else:
-                logger.warning(f"LLM returned an empty name for project {project_id}.")
+        if response_dict and isinstance(response_dict, dict):
+            try:
+                choices = response_dict.get('choices') or []
+                if choices:
+                    message_obj = choices[0].get('message') or {}
+                    raw_name = (message_obj.get('content') or '').strip()
+                    # Clean common wrapping characters and whitespace
+                    cleaned_name = raw_name.strip('\'" \n\t“”‘’.')
+                    # Hard truncate to a reasonable length
+                    cleaned_name = cleaned_name[:80]
+                    if cleaned_name:
+                        generated_name = cleaned_name
+                        logger.debug(f"LLM generated name for project {project_id}: '{generated_name}'")
+                    else:
+                        logger.warning(f"LLM returned an empty name for project {project_id}.")
+                else:
+                    logger.warning(f"LLM response had no choices for project {project_id}: {response_dict}")
+            except Exception as parse_err:
+                logger.error(f"Error parsing LLM response for project naming: {parse_err}")
         else:
-            logger.warning(f"Failed to get valid response from LLM for project {project_id} naming. Response: {response}")
+            logger.warning(
+                f"Failed to get valid response from LLM for project {project_id} naming. Response type={type(response)} value={response}"
+            )
 
         if generated_name:
             update_result = await client.table('projects').update({"name": generated_name}).eq("project_id", project_id).execute()
