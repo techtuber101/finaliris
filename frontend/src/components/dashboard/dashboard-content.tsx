@@ -361,7 +361,8 @@ export function DashboardContent() {
       <div className="flex flex-col h-screen w-full overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
-            {(
+            {/* Temporarily hidden - Custom Agents, Playbooks, and more button */}
+            {false && (
               <div className="flex justify-center px-4 pt-4 md:pt-8">
                 <ReleaseBadge text="Custom Agents, Playbooks, and more!" link="/agents?tab=my-agents" />
               </div>
@@ -391,12 +392,16 @@ export function DashboardContent() {
                     onConfigureAgent={(agentId) => router.push(`/agents/config/${agentId}`)}
                   />
                 </div>
-                <div className="w-full" data-tour="examples">
-                  <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
-                </div>
+                {/* Temporarily hidden - Demo prompts */}
+                {false && (
+                  <div className="w-full" data-tour="examples">
+                    <Examples onSelectPrompt={setInputValue} count={isMobile ? 3 : 4} />
+                  </div>
+                )}
               </div>
             </div>
-            {enabledEnvironment && (
+            {/* Temporarily hidden - Choose specialised agent section */}
+            {false && enabledEnvironment && (
               <div className="w-full px-4 pb-8" data-tour="custom-agents">
                 <div className="max-w-7xl mx-auto">
                   <CustomAgentsSection 
