@@ -243,6 +243,7 @@ export function NavAgents() {
   // Typing animation state for project names after rename
   const [typingStates, setTypingStates] = useState<Record<string, { current: string; target: string }>>({});
   const typingTimers = useRef<Map<string, number>>(new Map());
+  const prevProjectNamesRef = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -295,6 +296,58 @@ export function NavAgents() {
       typingTimers.current.clear();
     };
   }, []);
+
+  // Fallback: detect name changes from projects query updates and animate
+  useEffect(() => {
+    try {
+      const currentMap = new Map<string, string>();
+      projects.forEach(p => {
+        if (p?.id && typeof p?.name === 'string') currentMap.set(p.id, p.name);
+      });
+
+      const prev = prevProjectNamesRef.current;
+      currentMap.forEach((name, id) => {
+        const prevName = prev.get(id);
+        if (prevName !== undefined && prevName !== name) {
+          // Trigger the same flow as realtime rename
+          const existing = typingTimers.current.get(id);
+          if (existing) {
+            window.clearInterval(existing);
+            typingTimers.current.delete(id);
+          }
+          setTypingStates(prevState => ({ ...prevState, [id]: { current: '', target: name } }));
+          const timer = window.setInterval(() => {
+            setTypingStates(prevState => {
+              const state = prevState[id];
+              if (!state) return prevState;
+              if (state.current.length >= state.target.length) {
+                const t = typingTimers.current.get(id);
+                if (t) {
+                  window.clearInterval(t);
+                  typingTimers.current.delete(id);
+                }
+                setTimeout(() => {
+                  setTypingStates(prev2 => {
+                    const { [id]: _omit, ...rest } = prev2;
+                    return rest;
+                  });
+                }, 700);
+                return prevState;
+              }
+              const next = state.target.slice(0, state.current.length + 1);
+              return { ...prevState, [id]: { ...state, current: next } };
+            });
+          }, 25);
+          typingTimers.current.set(id, timer);
+        }
+      });
+
+      // Update previous snapshot
+      prevProjectNamesRef.current = currentMap;
+    } catch (e) {
+      // ignore
+    }
+  }, [projects]);
 
   const handleDeletionProgress = (completed: number, total: number) => {
     const percentage = (completed / total) * 100;
@@ -619,8 +672,17 @@ export function NavAgents() {
                       const isThreadLoading = loadingThreadId === thread.threadId;
                       const isSelected = selectedThreads.has(thread.threadId);
                       const typing = typingStates[thread.projectId];
-                      const displayName = typing ? typing.current : thread.projectName;
-                      const showCaret = Boolean(typing);
+                      const projectObj = projects.find(p => p.id === thread.projectId);
+                      const createdAtMs = projectObj?.created_at ? new Date(projectObj.created_at).getTime() : 0;
+                      const isRecentlyCreated = createdAtMs > 0 && (Date.now() - createdAtMs) < 20000; // 20s window
+                      const looksLikePlaceholder = typeof thread.projectName === 'string' && thread.projectName.endsWith('...') && thread.projectName.length >= 10;
+                      const showGenerating = !typing && isRecentlyCreated && looksLikePlaceholder;
+                      const displayName = typing
+                        ? typing.current
+                        : showGenerating
+                          ? 'Generating title…'
+                          : thread.projectName;
+                      const showCaret = Boolean(typing || showGenerating);
 
                       return (
                         <ThreadItem

@@ -21,22 +21,20 @@ export function useProjectsRealtime() {
     const setup = async () => {
       try {
         const { data: userData, error } = await supabase.auth.getUser();
-        if (error || !userData?.user) {
-          return;
-        }
+        const userId = !error && userData?.user ? userData.user.id : undefined;
+        const channelName = userId ? `projects-owner-${userId}` : 'projects-public';
+        const filter = userId ? `account_id=eq.${userId}` : 'is_public=eq.true';
 
-        const userId = userData.user.id;
-
-        // Subscribe to updates for projects owned by current user
+        // Subscribe to updates for user-owned (or public if no user) projects
         const ch = supabase
-          .channel(`projects-owner-${userId}`)
+          .channel(channelName)
           .on(
             'postgres_changes',
             {
               event: '*',
               schema: 'public',
               table: 'projects',
-              filter: `account_id=eq.${userId}`,
+              filter,
             },
             (payload) => {
               // Invalidate lists and the specific project details on any change
@@ -52,7 +50,7 @@ export function useProjectsRealtime() {
                 const newName = (payload.new as any)?.name;
                 if (
                   typeof window !== 'undefined' &&
-                  oldName && newName && oldName !== newName
+                  projectId && newName && oldName !== newName
                 ) {
                   window.dispatchEvent(
                     new CustomEvent('project-renamed', {
