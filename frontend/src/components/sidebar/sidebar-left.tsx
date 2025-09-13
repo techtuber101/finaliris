@@ -206,7 +206,8 @@ export function SidebarLeft({
               </SidebarMenuButton>
             </Link>
           )}
-          {(
+          {/* Temporarily hidden - Agents collapsible button section */}
+          {false && (
             <SidebarMenu>
               <Collapsible
                 defaultOpen={true}
@@ -266,8 +267,7 @@ export function SidebarLeft({
           )}
 
         </SidebarGroup>
-        {/* Temporarily hidden - Agents section */}
-        {false && <NavAgents />}
+        <NavAgents />
       </SidebarContent>
       {state !== 'collapsed' && (
         <div className="px-3 py-2">
