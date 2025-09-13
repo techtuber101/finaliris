@@ -565,6 +565,8 @@ class AgentRunner:
             return 8192
         elif "gpt-4" in self.config.model_name.lower():
             return 4096
+        elif "gpt-5" in self.config.model_name.lower():
+            return 64000
         elif "gemini-2.5-pro" in self.config.model_name.lower():
             return 64000
         elif "kimi-k2" in self.config.model_name.lower():
@@ -758,7 +760,7 @@ async def run_agent(
     thread_manager: Optional[ThreadManager] = None,
     native_max_auto_continues: int = 25,
     max_iterations: int = 100,
-    model_name: str = "google/gemini-2.5-pro",
+    model_name: str = "openai/gpt-5",
     enable_thinking: Optional[bool] = False,
     reasoning_effort: Optional[str] = 'low',
     enable_context_manager: bool = True,
@@ -766,7 +768,7 @@ async def run_agent(
     trace: Optional[StatefulTraceClient] = None
 ):
     effective_model = model_name
-    is_tier_default = model_name in ["Kimi K2", "Claude Sonnet 4", "openai/gpt-5-mini"]
+    is_tier_default = model_name in ["GPT-5", "Claude Sonnet 4", "openai/gpt-5-mini"]
     
     if is_tier_default and agent_config and agent_config.get('model'):
         effective_model = agent_config['model']

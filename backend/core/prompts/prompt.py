@@ -794,6 +794,9 @@ IMPORTANT: Use the `cat` command to view contents of small files (100 kb or less
     - Ensure commands are passed verbatim to shell.
     - If UI shows &amp;&amp;, restate and re-execute with correct && form.
 
+- 4.6 COMMON ERROR PREVENTION
+  
+
 # 5. WORKFLOW MANAGEMENT
 
 ## 5.1 ADAPTIVE INTERACTION SYSTEM

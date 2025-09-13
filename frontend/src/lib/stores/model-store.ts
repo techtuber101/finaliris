@@ -39,8 +39,8 @@ interface ModelStore {
   resetToDefault: (subscriptionStatus: SubscriptionStatus) => void;
 }
 
-const DEFAULT_FREE_MODEL_ID = 'google/gemini-2.5-pro';
-const DEFAULT_PREMIUM_MODEL_ID = 'google/gemini-2.5-pro';
+const DEFAULT_FREE_MODEL_ID = 'openai/gpt-5';
+const DEFAULT_PREMIUM_MODEL_ID = 'openai/gpt-5';
 
 export const useModelStore = create<ModelStore>()(
   persist(

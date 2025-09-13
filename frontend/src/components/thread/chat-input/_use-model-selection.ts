@@ -7,8 +7,8 @@ import { useAvailableModels } from '@/hooks/react-query/subscriptions/use-model'
 
 export const STORAGE_KEY_MODEL = 'suna-preferred-model-v3';
 export const STORAGE_KEY_CUSTOM_MODELS = 'customModels';
-export const DEFAULT_PREMIUM_MODEL_ID = 'google/gemini-2.5-pro';
-export const DEFAULT_FREE_MODEL_ID = 'moonshotai/kimi-k2';
+export const DEFAULT_PREMIUM_MODEL_ID = 'openai/gpt-5';
+export const DEFAULT_FREE_MODEL_ID = 'openai/gpt-5';
 
 export const testLocalStorage = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -143,8 +143,8 @@ export const useModelSelectionOld = () => {
     if (!modelsData?.models || isLoadingModels) {
       models = [
         { 
-          id: DEFAULT_FREE_MODEL_ID, 
-          label: 'KIMI K2', 
+          id: 'openai/gpt-5', 
+          label: 'GPT-5', 
           requiresSubscription: false,
           priority: 100,
           recommended: true
@@ -153,8 +153,15 @@ export const useModelSelectionOld = () => {
           id: DEFAULT_PREMIUM_MODEL_ID, 
           label: 'Gemini 2.5 Pro', 
           requiresSubscription: true, 
-          priority: 100,
-          recommended: true
+          priority: 90,
+          recommended: false
+        },
+        { 
+          id: DEFAULT_FREE_MODEL_ID, 
+          label: 'KIMI K2', 
+          requiresSubscription: false,
+          priority: 80,
+          recommended: false
         },
       ];
     } else {

@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional, Set
 from .ai_models import Model, ModelProvider, ModelCapability, ModelPricing
 
-DEFAULT_FREE_MODEL = "Gemini 2.5 Pro"
-DEFAULT_PREMIUM_MODEL = "Gemini 2.5 Pro"
+DEFAULT_FREE_MODEL = "GPT-5"
+DEFAULT_PREMIUM_MODEL = "GPT-5"
 
 class ModelRegistry:
     def __init__(self):
@@ -90,7 +90,8 @@ class ModelRegistry:
                 output_cost_per_million_tokens=10.00
             ),
             tier_availability=["free", "paid"],
-            priority=99,
+            priority=100,  # Highest priority
+            recommended=True,  # Make it recommended
             enabled=True  # Enable GPT-5 for agent usage
         ))
         

@@ -65,8 +65,8 @@ export const useModelSelection = () => {
     if (!modelsData?.models || isLoadingModels) {
       models = [
         { 
-          id: 'moonshotai/kimi-k2', 
-          label: 'Kimi K2', 
+          id: 'openai/gpt-5', 
+          label: 'GPT-5', 
           requiresSubscription: false,
           priority: 100,
           recommended: true
@@ -75,8 +75,15 @@ export const useModelSelection = () => {
           id: 'google/gemini-2.5-pro', 
           label: 'Gemini 2.5 Pro', 
           requiresSubscription: true, 
-          priority: 100,
-          recommended: true
+          priority: 90,
+          recommended: false
+        },
+        { 
+          id: 'moonshotai/kimi-k2', 
+          label: 'Kimi K2', 
+          requiresSubscription: false,
+          priority: 80,
+          recommended: false
         },
       ];
     } else {
