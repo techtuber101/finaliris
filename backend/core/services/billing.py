@@ -15,7 +15,7 @@ from core.utils.cache import Cache
 from core.utils.logger import logger
 from core.utils.config import config, EnvMode
 from core.services.supabase import DBConnection
-from core.utils.auth_utils import verify_and_get_user_id_from_jwt
+from core.utils.auth_utils import verify_and_get_user_id_from_jwt, get_optional_user_id
 from pydantic import BaseModel
 from core.ai_models import model_manager
 from litellm.cost_calculator import cost_per_token
@@ -2076,14 +2076,14 @@ async def stripe_webhook(request: Request):
 
 @router.get("/available-models")
 async def get_available_models(
-    current_user_id: str = Depends(verify_and_get_user_id_from_jwt)
+    current_user_id: Optional[str] = Depends(get_optional_user_id)
 ):
     """Get the list of models available to the user based on their subscription tier."""
     try:
         # Import the new model manager
         from core.ai_models import model_manager
         
-        # Get Supabase client
+        # Get Supabase client (only needed for non-local auth checks)
         db = DBConnection()
         client = await db.client
         
@@ -2116,10 +2116,13 @@ async def get_available_models(
                 "total_models": len(model_info)
             }
         
-        
+        # For non-local mode, enforce authentication
+        if config.ENV_MODE != EnvMode.LOCAL and not current_user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
         # For non-local mode, use new model manager system
         # Get subscription info for context
-        subscription = await get_user_subscription(current_user_id)
+        subscription = await get_user_subscription(current_user_id) if current_user_id else None
         
         # Determine tier name from subscription
         tier_name = 'free'
@@ -2140,8 +2143,8 @@ async def get_available_models(
         logger.debug(f"Found {len(all_models)} total models available")
         
         # Get allowed models for this specific user (for access checking)
-        allowed_models = await get_allowed_models_for_user(client, current_user_id)
-        logger.debug(f"User {current_user_id} allowed models: {allowed_models}")
+        allowed_models = await get_allowed_models_for_user(client, current_user_id) if current_user_id else [m["id"] for m in all_models]
+        logger.debug(f"User {current_user_id or 'public'} allowed models: {allowed_models}")
         logger.debug(f"User tier: {tier_name}")
         
         # Create clean model info for frontend
