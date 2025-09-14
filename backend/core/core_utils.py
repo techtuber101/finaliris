@@ -312,61 +312,52 @@ async def check_agent_run_limit(client, account_id: str) -> Dict[str, Any]:
     # Original limit logic commented out for testing
     # try:
 
-        # Calculate 24 hours ago
-        twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
-        twenty_four_hours_ago_iso = twenty_four_hours_ago.isoformat()
-        
-        logger.debug(f"Checking agent run limit for account {account_id} since {twenty_four_hours_ago_iso}")
-        
-        # Get all threads for this account
-        threads_result = await client.table('threads').select('thread_id').eq('account_id', account_id).execute()
-        
-        if not threads_result.data:
-            logger.debug(f"No threads found for account {account_id}")
-            return {
-                'can_start': True,
-                'running_count': 0,
-                'running_thread_ids': []
-            }
-        
-        thread_ids = [thread['thread_id'] for thread in threads_result.data]
-        logger.debug(f"Found {len(thread_ids)} threads for account {account_id}")
-        
-        # Query for running agent runs within the past 24 hours for these threads
-        from .utils.query_utils import batch_query_in
-        
-        running_runs = await batch_query_in(
-            client=client,
-            table_name='agent_runs',
-            select_fields='id, thread_id, started_at',
-            in_field='thread_id',
-            in_values=thread_ids,
-            additional_filters={
-                'status': 'running',
-                'started_at_gte': twenty_four_hours_ago_iso
-            }
-        )
-        
-        running_count = len(running_runs)
-        running_thread_ids = [run['thread_id'] for run in running_runs]
-        
-        logger.debug(f"Account {account_id} has {running_count} running agent runs in the past 24 hours")
-        
-        result = {
-            'can_start': running_count < config.MAX_PARALLEL_AGENT_RUNS,
-            'running_count': running_count,
-            'running_thread_ids': running_thread_ids
-        }
-        return result
-
-    except Exception as e:
-        logger.error(f"Error checking agent run limit for account {account_id}: {str(e)}")
-        # In case of error, allow the run to proceed but log the error
+    # Calculate 24 hours ago
+    twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
+    twenty_four_hours_ago_iso = twenty_four_hours_ago.isoformat()
+    
+    logger.debug(f"Checking agent run limit for account {account_id} since {twenty_four_hours_ago_iso}")
+    
+    # Get all threads for this account
+    threads_result = await client.table('threads').select('thread_id').eq('account_id', account_id).execute()
+    
+    if not threads_result.data:
+        logger.debug(f"No threads found for account {account_id}")
         return {
             'can_start': True,
             'running_count': 0,
             'running_thread_ids': []
         }
+    
+    thread_ids = [thread['thread_id'] for thread in threads_result.data]
+    logger.debug(f"Found {len(thread_ids)} threads for account {account_id}")
+    
+    # Query for running agent runs within the past 24 hours for these threads
+    from .utils.query_utils import batch_query_in
+    
+    running_runs = await batch_query_in(
+        client=client,
+        table_name='agent_runs',
+        select_fields='id, thread_id, started_at',
+        in_field='thread_id',
+        in_values=thread_ids,
+        additional_filters={
+            'status': 'running',
+            'started_at_gte': twenty_four_hours_ago_iso
+        }
+    )
+    
+    running_count = len(running_runs)
+    running_thread_ids = [run['thread_id'] for run in running_runs]
+    
+    logger.debug(f"Account {account_id} has {running_count} running agent runs in the past 24 hours")
+    
+    result = {
+        'can_start': running_count < config.MAX_PARALLEL_AGENT_RUNS,
+        'running_count': running_count,
+        'running_thread_ids': running_thread_ids
+    }
+    return result
 
 
 async def check_agent_count_limit(client, account_id: str) -> Dict[str, Any]:
