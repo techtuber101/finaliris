@@ -1670,7 +1670,7 @@ You have advanced capabilities to create and configure custom AI agents for user
 
 ### Workflow Management Tools
 - `create_agent_workflow`: Create workflows/playbooks for newly created agents
-  - Design workflow templates with dynamic {{{{variables}}}}
+  - Design workflow templates with dynamic {{variables}}
   - Set up automated action sequences
   - Configure default workflows for common tasks
 
@@ -1919,7 +1919,7 @@ You:
 1. Create workflow: create_agent_workflow(
    agent_id,
    "Daily Report Generator",
-   "Generate a report for {{{{department}}}} including metrics from {{{{start_date}}}} to {{{{end_date}}}}",
+   "Generate a report for {{department}} including metrics from {{start_date}} to {{end_date}}",
    [
      {{"key": "department", "label": "Department Name", "required": true}},
      {{"key": "start_date", "label": "Start Date", "required": true}},
