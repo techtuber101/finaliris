@@ -35,6 +35,9 @@ export const PaywallDialog: React.FC<PaywallDialogProps> = ({
   upgradeUrl = '/settings/billing',
   title = 'Upgrade Required',
 }) => {
+  // Hard-disable paywall dialog entirely
+  const DISABLE_BILLING_UI = true;
+  if (DISABLE_BILLING_UI) return <>{children}</>;
   const handleUpgrade = useCallback(() => {
     if (onUpgradeClick) {
       onUpgradeClick();

@@ -290,16 +290,7 @@ export function NavUserWithTeams({
 
               {/* User Settings Section */}
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setShowBillingModal(true)}>
-                  <Zap className="h-4 w-4" />
-                  Upgrade
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/billing">
-                    <CreditCard className="h-4 w-4" />
-                    Billing
-                  </Link>
-                </DropdownMenuItem>
+                {/* Billing disabled */}
                 {(
                   <DropdownMenuItem asChild>
                     <Link href="/settings/credentials">

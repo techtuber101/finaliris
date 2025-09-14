@@ -87,6 +87,9 @@ export const UpgradeDialog: React.FC<UpgradeDialogProps> = ({
   contentClassName,
   preventOutsideClick = false,
 }) => {
+  // Hard-disable any upgrade dialog rendering
+  const DISABLE_BILLING_UI = true;
+  if (DISABLE_BILLING_UI) return null;
   const themeStyles = themeConfig[theme];
   const sizeClass = sizeConfig[size];
 

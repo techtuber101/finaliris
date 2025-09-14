@@ -23,6 +23,9 @@ export function BillingErrorAlert({
   onDismiss,
   isOpen,
 }: BillingErrorAlertProps) {
+  // Hard-disable billing/usage alerts globally
+  const DISABLE_BILLING_UI = true;
+  if (DISABLE_BILLING_UI) return null;
   const [showBillingModal, setShowBillingModal] = useState(false);
 
   if (!isOpen) return null;

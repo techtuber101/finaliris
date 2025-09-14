@@ -71,11 +71,7 @@ export default function PersonalAccountBillingPage() {
 
   return (
     <div className="space-y-6">
-      <BillingModal 
-        open={showBillingModal} 
-        onOpenChange={setShowBillingModal}
-        returnUrl={`${returnUrl}/settings/billing`}
-      />
+      {/* Billing disabled */}
       
       {/* Billing Status Card */}
       <div className="rounded-xl border shadow-sm bg-card p-6">
@@ -156,17 +152,7 @@ export default function PersonalAccountBillingPage() {
         )}
       </div>
       
-      {/* Credit Purchase Modal */}
-      <CreditPurchaseModal
-        open={showCreditPurchaseModal}
-        onOpenChange={setShowCreditPurchaseModal}
-        currentBalance={subscriptionData?.credit_balance || 0}
-        canPurchase={subscriptionData?.can_purchase_credits || false}
-        onPurchaseComplete={() => {
-          // Optionally refresh subscription data here
-          window.location.reload();
-        }}
-      />
+      {/* Credit purchase disabled */}
     </div>
   );
 }

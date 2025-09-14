@@ -202,13 +202,15 @@ export function AgentModelSelector({
       return;
     }
     
-    const hasAccess = isLocalMode() || canAccessModel(modelId);
+    // Disable paywall: always allow selection
+    const hasAccess = true;
     if (hasAccess) {
       onChange(modelId);
       setIsOpen(false);
     } else {
-      setLockedModel(modelId);
-      setPaywallOpen(true);
+      // Paywall disabled
+      onChange(modelId);
+      setIsOpen(false);
     }
   };
 
@@ -621,26 +623,7 @@ export function AgentModelSelector({
           mode={dialogMode}
         />
       )}
-      {paywallOpen && (
-        <PaywallDialog
-          open={true}
-          onDialogClose={closePaywallDialog}
-          title="Premium Model"
-          description={
-            lockedModel
-              ? `Subscribe to access ${enhancedModelOptions.find(
-                  (m) => m.id === lockedModel
-                )?.label}`
-              : 'Subscribe to access premium models with enhanced capabilities'
-          }
-          ctaText="Subscribe Now"
-          cancelText="Maybe Later"
-        />
-      )}
-      <BillingModal
-        open={billingModalOpen}
-        onOpenChange={setBillingModalOpen}
-      />
+      {/* Paywall and billing disabled */}
     </div>
   );
 }

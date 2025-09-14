@@ -90,11 +90,7 @@ export default function TeamBillingPage({
 
   return (
     <div className="space-y-6">
-      <BillingModal 
-        open={showBillingModal} 
-        onOpenChange={setShowBillingModal}
-        returnUrl={`${returnUrl}/${accountSlug}/settings/billing`}
-      />
+      {/* Billing disabled */}
       
       <div>
         <h3 className="text-lg font-medium text-card-title">Team Billing</h3>

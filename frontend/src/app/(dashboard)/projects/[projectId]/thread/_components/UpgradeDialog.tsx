@@ -10,6 +10,9 @@ interface UpgradeDialogProps {
 }
 
 export function UpgradeDialog({ open, onOpenChange, onDismiss }: UpgradeDialogProps) {
+  // Hard-disable upgrade flow entirely
+  const DISABLE_BILLING_UI = true;
+  if (DISABLE_BILLING_UI) return null;
   const [showBillingModal, setShowBillingModal] = useState(false);
 
   const handleUpgradeClick = () => {
@@ -33,8 +36,8 @@ export function UpgradeDialog({ open, onOpenChange, onDismiss }: UpgradeDialogPr
         open={open}
         onOpenChange={onOpenChange}
         icon={Crown}
-        title="Unlock the Full Suna Experience"
-        description="You're currently using Suna's free tier with limited capabilities. Upgrade now to access our most powerful AI model."
+        title="Unlock the Full Iris Experience"
+        description="You're currently using Iris's free tier with limited capabilities. Upgrade now to access our most powerful AI model."
         theme="primary"
         size="sm"
         preventOutsideClick={true}

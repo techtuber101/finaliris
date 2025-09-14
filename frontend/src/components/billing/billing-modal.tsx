@@ -48,6 +48,11 @@ interface BillingModalProps {
 }
 
 export function BillingModal({ open, onOpenChange, returnUrl = typeof window !== 'undefined' ? window?.location?.href || '/' : '/', showUsageLimitAlert = false }: BillingModalProps) {
+    // Hard-disable billing UI everywhere
+    const DISABLE_BILLING_UI = true;
+    if (DISABLE_BILLING_UI) {
+        return null;
+    }
     const { session, isLoading: authLoading } = useAuth();
     const queryClient = useQueryClient();
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionStatus | null>(null);

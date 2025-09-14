@@ -18,6 +18,28 @@ interface SubscriptionProviderProps {
 }
 
 export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
+  // Hard-disable billing/subscription fetching and provide permissive defaults
+  const DISABLE_BILLING_UI = true;
+  if (DISABLE_BILLING_UI) {
+    const value: SubscriptionContextType = {
+      subscriptionData: {
+        status: 'active',
+        plan_name: 'pro',
+        cost_limit: 999999,
+        current_usage: 0,
+      } as SubscriptionStatus,
+      isLoading: false,
+      error: null,
+      refetch: () => {},
+    };
+
+    return (
+      <SubscriptionContext.Provider value={value}>
+        {children}
+      </SubscriptionContext.Provider>
+    );
+  }
+
   const { 
     data: subscriptionData, 
     isLoading, 
