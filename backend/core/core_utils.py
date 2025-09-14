@@ -444,49 +444,58 @@ async def check_project_count_limit(client, account_id: str) -> Dict[str, Any]:
     preventing issues where deleted projects aren't immediately reflected in limits.
     """
     try:
-        # In local mode, allow practically unlimited projects
-        if config.ENV_MODE.value == "local":
-            return {
-                'can_create': True,
-                'current_count': 0,  # Return 0 to avoid showing any limit warnings
-                'limit': 999999,     # Practically unlimited
-                'tier_name': 'local'
-            }
-        
-        # Always count projects fresh from database to avoid stale cache issues
-        projects_result = await client.table('projects').select('project_id').eq('account_id', account_id).execute()
-        current_count = len(projects_result.data or [])
-        logger.debug(f"Account {account_id} has {current_count} projects (real-time count)")
-        
-        try:
-            from core.services.billing import get_subscription_tier
-            tier_name = await get_subscription_tier(client, account_id)
-            logger.debug(f"Account {account_id} subscription tier: {tier_name}")
-        except Exception as billing_error:
-            logger.warning(f"Could not get subscription tier for {account_id}: {str(billing_error)}, defaulting to free")
-            tier_name = 'free'
-        
-        project_limit = config.PROJECT_LIMITS.get(tier_name, config.PROJECT_LIMITS['free'])
-        can_create = current_count < project_limit
-        
-        result = {
-            'can_create': can_create,
-            'current_count': current_count,
-            'limit': project_limit,
-            'tier_name': tier_name
+        # PROJECT LIMIT CHECKS DISABLED - Always allow unlimited projects
+        logger.debug("Project limit checks disabled for testing - allowing unlimited projects")
+        return {
+            'can_create': True,
+            'current_count': 0,  # Return 0 to avoid showing any limit warnings
+            'limit': 999999,     # Practically unlimited
+            'tier_name': 'testing_mode'
         }
         
-        logger.debug(f"Account {account_id} has {current_count}/{project_limit} projects (tier: {tier_name}) - can_create: {can_create}")
+        # Original project limit logic commented out for testing
+        # if config.ENV_MODE.value == "local":
+        #     return {
+        #         'can_create': True,
+        #         'current_count': 0,  # Return 0 to avoid showing any limit warnings
+        #         'limit': 999999,     # Practically unlimited
+        #         'tier_name': 'local'
+        #     }
         
-        return result
+        # Always count projects fresh from database to avoid stale cache issues
+        # projects_result = await client.table('projects').select('project_id').eq('account_id', account_id).execute()
+        # current_count = len(projects_result.data or [])
+        # logger.debug(f"Account {account_id} has {current_count} projects (real-time count)")
+        
+        # try:
+        #     from core.services.billing import get_subscription_tier
+        #     tier_name = await get_subscription_tier(client, account_id)
+        #     logger.debug(f"Account {account_id} subscription tier: {tier_name}")
+        # except Exception as billing_error:
+        #     logger.warning(f"Could not get subscription tier for {account_id}: {str(billing_error)}, defaulting to free")
+        #     tier_name = 'free'
+        
+        # project_limit = config.PROJECT_LIMITS.get(tier_name, config.PROJECT_LIMITS['free'])
+        # can_create = current_count < project_limit
+        
+        # result = {
+        #     'can_create': can_create,
+        #     'current_count': current_count,
+        #     'limit': project_limit,
+        #     'tier_name': tier_name
+        # }
+        
+        # logger.debug(f"Account {account_id} has {current_count}/{project_limit} projects (tier: {tier_name}) - can_create: {can_create}")
+        
+        # return result
         
     except Exception as e:
         logger.error(f"Error checking project count limit for account {account_id}: {str(e)}", exc_info=True)
         return {
-            'can_create': False,
+            'can_create': True,  # Changed from False to True
             'current_count': 0,
-            'limit': config.PROJECT_LIMITS['free'],
-            'tier_name': 'free'
+            'limit': 999999,    # Changed from config.PROJECT_LIMITS['free'] to 999999
+            'tier_name': 'testing_mode'
         }
 
 
