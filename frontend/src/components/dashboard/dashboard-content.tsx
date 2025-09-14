@@ -113,7 +113,7 @@ export function DashboardContent() {
     sort_order: 'asc'
   });
 
-  const agents = agentsResponse?.agents || [];
+  const agents = React.useMemo(() => agentsResponse?.agents || [], [agentsResponse?.agents]);
   const selectedAgent = selectedAgentId
     ? agents.find(agent => agent.agent_id === selectedAgentId)
     : null;
@@ -279,7 +279,7 @@ export function DashboardContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [autoSubmit, inputValue, isSubmitting, isRedirecting]);
+  }, [autoSubmit, inputValue, isSubmitting, isRedirecting, handleSubmit]);
 
   return (
     <>

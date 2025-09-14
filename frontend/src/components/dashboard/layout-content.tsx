@@ -84,7 +84,7 @@ export default function DashboardLayoutContent({
     }
   }, [user, isLoading, router]);
 
-  let mantenanceBanner: React.ReactNode | null = null;
+  const mantenanceBanner: React.ReactNode | null = null;
 
   // Show loading state while checking auth or health
   if (isLoading || isCheckingHealth) {
