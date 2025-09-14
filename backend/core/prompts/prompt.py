@@ -367,7 +367,7 @@ You have the abilixwty to execute operations using both Python and CLI tools:
 ### 3.3.5 TRANSPORT WITH HTML RISK (LAST RESORT)
 - If your channel may HTML-escape code, send a base64 script and decode inside the shell **after** sanitize checks on the decoded text:
   * `bash -lc 'set -euo pipefail; cmd="$(printf %s "<BASE64_PAYLOAD>" | base64 -d)";`
-  * `echo "$cmd" | grep -q "&&" && ! echo "$cmd" | grep -q ";&" || { echo "sanitize-fail"; exit 1; };`
+  * `echo "$cmd" | grep -q "&&" && ! echo "$cmd" | grep -q ";&" || {{ echo "sanitize-fail"; exit 1; }};`
   * `eval "$cmd"'`
 
 ### 3.3.6 ENFORCEMENT
