@@ -50,9 +50,6 @@ interface BillingModalProps {
 export function BillingModal({ open, onOpenChange, returnUrl = typeof window !== 'undefined' ? window?.location?.href || '/' : '/', showUsageLimitAlert = false }: BillingModalProps) {
     // Hard-disable billing UI everywhere
     const DISABLE_BILLING_UI = true;
-    if (DISABLE_BILLING_UI) {
-        return null;
-    }
     const { session, isLoading: authLoading } = useAuth();
     const queryClient = useQueryClient();
     const [subscriptionData, setSubscriptionData] = useState<SubscriptionStatus | null>(null);
@@ -93,6 +90,10 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
         if (!open || authLoading || !session) return;
         fetchSubscriptionData();
     }, [open, session, authLoading]);
+
+    if (DISABLE_BILLING_UI) {
+        return null;
+    }
 
     const formatDate = (timestamp: number) => {
         return new Date(timestamp * 1000).toLocaleDateString('en-US', {

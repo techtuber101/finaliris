@@ -1,4 +1,4 @@
-do'use client';
+'use client';
 
 import { useAuth } from '@/components/AuthProvider';
 import { useMemo } from 'react';

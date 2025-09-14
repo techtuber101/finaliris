@@ -37,7 +37,6 @@ export const PaywallDialog: React.FC<PaywallDialogProps> = ({
 }) => {
   // Hard-disable paywall dialog entirely
   const DISABLE_BILLING_UI = true;
-  if (DISABLE_BILLING_UI) return <>{children}</>;
   const handleUpgrade = useCallback(() => {
     if (onUpgradeClick) {
       onUpgradeClick();
@@ -75,6 +74,8 @@ export const PaywallDialog: React.FC<PaywallDialogProps> = ({
       });
     }
   }, [open]);
+
+  if (DISABLE_BILLING_UI) return <>{children}</>;
 
   return (
     <>

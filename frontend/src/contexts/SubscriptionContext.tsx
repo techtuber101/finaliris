@@ -20,6 +20,13 @@ interface SubscriptionProviderProps {
 export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
   // Hard-disable billing/subscription fetching and provide permissive defaults
   const DISABLE_BILLING_UI = true;
+  const { 
+    data: subscriptionData, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useSubscriptionQuery();
+
   if (DISABLE_BILLING_UI) {
     const value: SubscriptionContextType = {
       subscriptionData: {
@@ -39,13 +46,6 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
       </SubscriptionContext.Provider>
     );
   }
-
-  const { 
-    data: subscriptionData, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useSubscriptionQuery();
 
   const value: SubscriptionContextType = {
     subscriptionData: subscriptionData || null,

@@ -12,8 +12,9 @@ interface UpgradeDialogProps {
 export function UpgradeDialog({ open, onOpenChange, onDismiss }: UpgradeDialogProps) {
   // Hard-disable upgrade flow entirely
   const DISABLE_BILLING_UI = true;
-  if (DISABLE_BILLING_UI) return null;
   const [showBillingModal, setShowBillingModal] = useState(false);
+
+  if (DISABLE_BILLING_UI) return null;
 
   const handleUpgradeClick = () => {
     // Close the upgrade dialog and open the billing modal
