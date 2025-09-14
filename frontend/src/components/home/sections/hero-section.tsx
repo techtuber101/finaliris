@@ -272,7 +272,12 @@ export function HeroSection() {
 
   return (
     <section id="hero" className="w-full relative overflow-hidden">
-      {/* Billing disabled */}
+      {/* TEMPORARILY DISABLED FOR TESTING - Never show billing modals */}
+      {/* <BillingModal 
+        open={showPaymentModal} 
+        onOpenChange={setShowPaymentModal}
+        showUsageLimitAlert={true}
+      /> */}
       <div className="relative flex flex-col items-center w-full px-4 sm:px-6">
         {/* Left side flickering grid with gradient fades */}
         <div className="hidden sm:block absolute left-0 top-0 h-[500px] sm:h-[600px] md:h-[800px] w-1/4 sm:w-1/3 -z-10 overflow-hidden">

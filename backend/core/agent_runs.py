@@ -725,6 +725,75 @@ async def initiate_agent_with_files(
                 logger.debug(f"Using default agent: {agent_config['name']} ({agent_config['agent_id']}) - no version data")
         else:
             logger.warning(f"[AGENT INITIATE] No default agent found for account {account_id}")
+            # Auto-create a default agent if none exists
+            try:
+                logger.info(f"[AGENT INITIATE] Creating default agent for account {account_id}")
+                from core.utils.suna_default_agent_service import SunaDefaultAgentService
+                from core.suna_config import SUNA_CONFIG
+                from core.config_helper import _get_default_agentpress_tools
+                from core.ai_models import model_manager
+                
+                # Create the default agent
+                agent_data = {
+                    "account_id": account_id,
+                    "name": SUNA_CONFIG["name"],
+                    "description": SUNA_CONFIG["description"],
+                    "is_default": True,
+                    "icon_name": "sun",
+                    "icon_color": "#F59E0B",
+                    "icon_background": "#FFF3CD",
+                    "metadata": {
+                        "is_suna_default": True,
+                        "centrally_managed": True,
+                        "installation_date": datetime.now(timezone.utc).isoformat()
+                    },
+                    "version_count": 1
+                }
+                
+                new_agent_result = await client.table('agents').insert(agent_data).execute()
+                
+                if new_agent_result.data:
+                    agent_id = new_agent_result.data[0]['agent_id']
+                    logger.info(f"[AGENT INITIATE] Created default agent {agent_id} for account {account_id}")
+                    
+                    # Create initial version
+                    version_service = await _get_version_service()
+                    system_prompt = SUNA_CONFIG["system_prompt"]
+                    agentpress_tools = _get_default_agentpress_tools()
+                    default_model = await model_manager.get_default_model_for_user(client, user_id)
+                    
+                    version = await version_service.create_version(
+                        agent_id=agent_id,
+                        user_id=user_id,
+                        system_prompt=system_prompt,
+                        model=default_model,
+                        configured_mcps=[],
+                        custom_mcps=[],
+                        agentpress_tools=agentpress_tools,
+                        version_name="v1",
+                        change_description="Initial version"
+                    )
+                    
+                    # Update agent with current version
+                    await client.table('agents').update({
+                        'current_version_id': version.version_id
+                    }).eq('agent_id', agent_id).execute()
+                    
+                    # Now get the agent data again
+                    default_agent_result = await client.table('agents').select('*').eq('account_id', account_id).eq('is_default', True).execute()
+                    if default_agent_result.data:
+                        agent_data = default_agent_result.data[0]
+                        version_data = version.to_dict()
+                        agent_config = extract_agent_config(agent_data, version_data)
+                        logger.info(f"[AGENT INITIATE] Successfully created and loaded default agent: {agent_config['name']}")
+                    else:
+                        logger.error(f"[AGENT INITIATE] Failed to retrieve created default agent")
+                else:
+                    logger.error(f"[AGENT INITIATE] Failed to create default agent for account {account_id}")
+                    
+            except Exception as e:
+                logger.error(f"[AGENT INITIATE] Error creating default agent: {e}")
+                # Continue without agent config - will be handled later
     
     logger.debug(f"[AGENT INITIATE] Final agent_config: {agent_config is not None}")
     if agent_config:
