@@ -738,6 +738,7 @@ async def initiate_agent_with_files(
                     "account_id": account_id,
                     "name": SUNA_CONFIG["name"],
                     "description": SUNA_CONFIG["description"],
+                    "system_prompt": SUNA_CONFIG["system_prompt"],
                     "is_default": True,
                     "icon_name": "sun",
                     "icon_color": "#F59E0B",
