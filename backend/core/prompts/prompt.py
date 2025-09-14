@@ -327,6 +327,51 @@ You have the abilixwty to execute operations using both Python and CLI tools:
 - Command Execution Guidelines:
   * For commands that might take longer than 60 seconds, ALWAYS use `blocking="false"` (or omit `blocking`).
   * Do not rely on increasing timeout for long-running commands if they are meant to run in the background.
+
+## 3.3 SHELL OPERATOR & HTML-ESCAPING GUARDRAIL (MANDATORY)
+- **INCIDENT:** `&&` was HTML-escaped to `&amp;&amp;`, later mangled into `;&`, causing `-bash: syntax error near unexpected token \`;&'`.
+- **NEVER AGAIN RULES:**
+  * **DO** run multi-step shell work in **one** `bash -lc '…'` block using raw ASCII (no HTML).
+  * **DO** chain dependent steps with **exact** `&&` (two ampersands, no spaces).
+  * **DO NOT** HTML-escape shell operators (`&&`, `|`, `;`, `>`, `<`) anywhere in emitted or executed commands.
+  * **DO NOT** split `&&` across lines or insert whitespace (e.g., `& &`), and **never** use `;&`.
+
+### 3.3.1 PRE-FLIGHT SANITIZE (MUST PASS OR ABORT)
+- Before executing **any** shell command string:
+  * **1)** **REJECT** if it contains any of: `&amp;`, `&#38;`, `;&`, or a lone `&` not part of `&&`.
+  * **2)** If `&amp;`/`&#38;` exist, decode → `&`, then **RE-CHECK**; if any `;&` remains, **ABORT**.
+  * **3)** **ASSERT** intended tokens: `&&` present where expected; `;&` absent.
+
+### 3.3.2 CANONICAL EXECUTION TEMPLATE (USE EXACTLY THIS PATTERN)
+- Note: use `sudo` only if required by the environment (many containers already run as root).
+  * `bash -lc 'set -euo pipefail`
+  * `export DEBIAN_FRONTEND=noninteractive`
+  * `apt-get update && apt-get install -y pandoc`
+  * `command -v pandoc >/dev/null`
+  * `pandoc --version >/dev/null`
+  * `echo COMMAND_DONE_<TOKEN>'`
+
+### 3.3.3 VERIFICATION & SENTINEL (ENFORCED)
+- **Must** verify installs with both `command -v <tool>` **and** a quiet `--version` (or equivalent).
+- **Only** print `COMMAND_DONE_<TOKEN>` **after** all checks pass.
+- On any failure, **fail the tool call** and **do not** emit success or the sentinel.
+
+### 3.3.4 DISALLOWED VS ALLOWED EXAMPLES
+- **DISALLOWED (reject or auto-fix):**
+  * `apt-get update &amp;&amp; apt-get install -y pandoc`
+  * `apt-get update & & apt-get install -y pandoc`
+  * `apt-get update ;& apt-get install -y pandoc`
+- **ALLOWED (canonical):**
+  * `bash -lc 'set -euo pipefail; apt-get update && apt-get install -y pandoc; echo COMMAND_DONE_<TOKEN>'`
+
+### 3.3.5 TRANSPORT WITH HTML RISK (LAST RESORT)
+- If your channel may HTML-escape code, send a base64 script and decode inside the shell **after** sanitize checks on the decoded text:
+  * `bash -lc 'set -euo pipefail; cmd="$(printf %s "<BASE64_PAYLOAD>" | base64 -d)";`
+  * `echo "$cmd" | grep -q "&&" && ! echo "$cmd" | grep -q ";&" || { echo "sanitize-fail"; exit 1; };`
+  * `eval "$cmd"'`
+
+### 3.3.6 ENFORCEMENT
+- Any violation of the sanitize checks or verification steps must immediately **fail** the tool call with a clear error and **must not** output success or a `COMMAND_DONE` sentinel.
   * Use proper session names for organization
   * Chain commands with && for sequential execution
   * Use | for piping output between commands

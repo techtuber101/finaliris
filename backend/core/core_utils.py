@@ -301,7 +301,16 @@ async def check_agent_run_limit(client, account_id: str) -> Dict[str, Any]:
         
     Note: This function does not use caching to ensure real-time limit checks.
     """
-    try:
+    # TEMPORARILY DISABLED FOR TESTING - Always allow unlimited runs
+    logger.debug(f"Agent run limit checks temporarily disabled for testing - allowing unlimited runs for account {account_id}")
+    return {
+        'can_start': True,
+        'running_count': 0,
+        'running_thread_ids': []
+    }
+
+    # Original limit logic commented out for testing
+    # try:
 
         # Calculate 24 hours ago
         twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)

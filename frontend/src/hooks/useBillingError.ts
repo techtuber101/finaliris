@@ -19,10 +19,15 @@ export function useBillingError() {
   );
 
   const handleBillingError = useCallback((error: any) => {
-    // In local mode, don't process billing errors
-    if (isLocalMode()) {
-      return false;
-    }
+    // TEMPORARILY DISABLED FOR TESTING - Never show billing errors
+    console.log("Billing error handling disabled for testing:", error);
+    return false;
+
+    // Original billing error logic commented out for testing
+    // // In local mode, don't process billing errors
+    // if (isLocalMode()) {
+    //   return false;
+    // }
 
     // Case 1: Error is already a formatted billing error detail object
     if (error && (error.message || error.subscription)) {

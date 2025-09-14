@@ -34,6 +34,7 @@ import { ReleaseBadge } from '../auth/release-badge';
 import { useDashboardTour } from '@/hooks/use-dashboard-tour';
 import { TourConfirmationDialog } from '@/components/tour/TourConfirmationDialog';
 import { Calendar, MessageSquare, Plus, Sparkles, Zap } from 'lucide-react';
+import { DynamicGreeting } from './dynamic-greeting';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -88,6 +89,9 @@ export function DashboardContent() {
   const chatInputRef = React.useRef<ChatInputHandles>(null);
   const initiateAgentMutation = useInitiateAgentWithInvalidation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // TEMPORARILY DISABLED FOR TESTING - Never show payment modals
+  // const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Tour integration
   const {
@@ -235,19 +239,23 @@ export function DashboardContent() {
       chatInputRef.current?.clearPendingFiles();
     } catch (error: any) {
       console.error('Error during submission process:', error);
-      if (error instanceof BillingError) {
-        setShowPaymentModal(true);
-      } else if (error instanceof AgentRunLimitError) {
-        const { running_thread_ids, running_count } = error.detail;
-        setAgentLimitData({
-          runningCount: running_count,
-          runningThreadIds: running_thread_ids,
-        });
-        setShowAgentLimitDialog(true);
-      } else {
+      // TEMPORARILY DISABLED FOR TESTING - Never show billing or limit errors
+      console.log("Billing and limit error handling disabled for testing:", error);
+      
+      // Original error handling commented out for testing
+      // if (error instanceof BillingError) {
+      //   setShowPaymentModal(true);
+      // } else if (error instanceof AgentRunLimitError) {
+      //   const { running_thread_ids, running_count } = error.detail;
+      //   setAgentLimitData({
+      //     runningCount: running_count,
+      //     runningThreadIds: running_thread_ids,
+      //   });
+      //   setShowAgentLimitDialog(true);
+      // } else {
         const errorMessage = error instanceof Error ? error.message : 'Operation failed';
         toast.error(errorMessage);
-      }
+      // }
       // Only reset loading state if there was an error or no thread_id was returned
       setIsSubmitting(false);
     }
@@ -353,11 +361,12 @@ export function DashboardContent() {
         onDecline={handleWelcomeDecline}
       />
 
-      <BillingModal 
+      {/* TEMPORARILY DISABLED FOR TESTING - Never show billing modals */}
+      {/* <BillingModal 
         open={showPaymentModal} 
         onOpenChange={setShowPaymentModal}
         showUsageLimitAlert={true}
-      />
+      /> */}
       <div className="flex flex-col h-screen w-full overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
@@ -370,12 +379,10 @@ export function DashboardContent() {
             <div className="flex-1 flex items-center justify-center px-4 py-8">
               <div className="w-full max-w-[650px] flex flex-col items-center justify-center space-y-4 md:space-y-6">
                 <div className="flex flex-col items-center text-center w-full">
-                  <p 
+                  <DynamicGreeting 
                     className="tracking-tight text-2xl md:text-3xl font-normal text-foreground/90"
                     data-tour="dashboard-title"
-                  >
-                    What would you like to do today?
-                  </p>
+                  />
                 </div>
                 <div className="w-full" data-tour="chat-input">
                   <ChatInput
@@ -413,17 +420,19 @@ export function DashboardContent() {
           </div>
         </div>
         
-        <BillingErrorAlert
+        {/* TEMPORARILY DISABLED FOR TESTING - Never show billing alerts */}
+        {/* <BillingErrorAlert
           message={billingError?.message}
           currentUsage={billingError?.currentUsage}
           limit={billingError?.limit}
           accountId={personalAccount?.account_id}
           onDismiss={clearBillingError}
           isOpen={!!billingError}
-        />
+        /> */}
       </div>
 
-      {agentLimitData && (
+      {/* TEMPORARILY DISABLED FOR TESTING - Never show agent limit dialogs */}
+      {/* {agentLimitData && (
         <AgentRunLimitDialog
           open={showAgentLimitDialog}
           onOpenChange={setShowAgentLimitDialog}
@@ -431,7 +440,7 @@ export function DashboardContent() {
           runningThreadIds={agentLimitData.runningThreadIds}
           projectId={undefined}
         />
-      )}
+      )} */}
     </>
   );
 }

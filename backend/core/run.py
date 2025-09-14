@@ -335,6 +335,84 @@ class PromptManager:
                 logger.error(f"Error retrieving knowledge base context for agent {agent_config.get('agent_id', 'unknown')}: {e}")
                 # Continue without knowledge base context rather than failing
         
+        # Add user personalization context if available
+        if client and thread_id:
+            try:
+                logger.debug(f"Retrieving user context for thread {thread_id}")
+                
+                # Get account_id from thread
+                thread_result = await client.table('threads').select('account_id').eq('thread_id', thread_id).limit(1).execute()
+                if thread_result.data:
+                    account_id = thread_result.data[0]['account_id']
+                    
+                    # Get user information from account
+                    user_result = await client.schema('basejump').table('accounts').select(
+                        'primary_owner_user_id'
+                    ).eq('id', account_id).limit(1).execute()
+                    
+                    if user_result.data:
+                        user_id = user_result.data[0]['primary_owner_user_id']
+                        
+                        # Get user metadata from auth.users
+                        auth_user_result = await client.table('auth.users').select(
+                            'user_metadata', 'email'
+                        ).eq('id', user_id).limit(1).execute()
+                        
+                        if auth_user_result.data:
+                            user_data = auth_user_result.data[0]
+                            user_metadata = user_data.get('user_metadata', {})
+                            email = user_data.get('email', '')
+                            
+                            # Extract first name
+                            first_name = (
+                                user_metadata.get('name', '').split(' ')[0] or
+                                user_metadata.get('first_name', '') or
+                                email.split('@')[0] if email else ''
+                            )
+                            
+                            if first_name:
+                                logger.debug(f"Found user first name: {first_name}")
+                                
+                                # Add personalized context to system prompt
+                                personalization_section = f"""
+
+=== USER PERSONALIZATION ===
+IMPORTANT: The user's first name is {first_name}. Use this information to personalize your interactions:
+
+1. **Gentle Name Usage**: Occasionally use their first name naturally in conversation, especially when:
+   - Starting a new task or phase of work
+   - Providing encouragement or positive feedback
+   - Transitioning between different parts of a complex task
+   - Acknowledging their input or decisions
+
+2. **Natural Integration**: Don't overuse their name - aim for 1-2 mentions per conversation, used naturally and contextually.
+
+3. **Examples of Good Usage**:
+   - "Alright {first_name}, let's tackle this step by step..."
+   - "Great question, {first_name}! Here's what we need to consider..."
+   - "Perfect! Now that we've completed that, {first_name}, let's move on to..."
+   - "I see what you're getting at, {first_name}. Let me help you with that..."
+
+4. **Avoid**: Using their name in every sentence or inappropriately formal contexts.
+
+Remember: The goal is to make interactions feel more personal and engaging while maintaining professionalism.
+=== END USER PERSONALIZATION ===
+
+"""
+                                system_content += personalization_section
+                            else:
+                                logger.debug("No first name found for user personalization")
+                        else:
+                            logger.debug("No auth user data found for personalization")
+                    else:
+                        logger.debug("No account data found for personalization")
+                else:
+                    logger.debug("No thread data found for personalization")
+                    
+            except Exception as e:
+                logger.error(f"Error retrieving user context for personalization: {e}")
+                # Continue without personalization rather than failing
+        
         if agent_config and (agent_config.get('configured_mcps') or agent_config.get('custom_mcps')) and mcp_wrapper_instance and mcp_wrapper_instance._initialized:
             mcp_info = "\n\n--- MCP Tools Available ---\n"
             mcp_info += "You have access to external MCP (Model Context Protocol) server tools.\n"

@@ -13,6 +13,7 @@ import { FAQSection } from '@/components/home/sections/faq-section';
 import { ThemeToggle } from '@/components/home/theme-toggle';
 import { HeroVideoSection } from '@/components/home/sections/hero-video-section';
 import { VisionPipeline } from '@/components/home/sections/vision-pipeline';
+import { DynamicGreeting } from '@/components/dashboard/dynamic-greeting';
 
 // Shared key used by the real dashboard to auto-submit after login
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
@@ -115,9 +116,7 @@ function PublicDashboardContent() {
 
         <div className="relative z-10 w-full max-w-[700px]">
           <div className="mb-6 text-center">
-            <p className="text-2xl md:text-3xl tracking-tight text-foreground/90">
-              What would you like to do today?
-            </p>
+            <DynamicGreeting className="text-2xl md:text-3xl tracking-tight text-foreground/90" />
           </div>
           <ChatInput
             onSubmit={handleSubmit}
