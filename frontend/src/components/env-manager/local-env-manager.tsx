@@ -3,7 +3,7 @@
 import { Eye, EyeOff, Plus, Trash } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { isLocalMode } from "@/lib/config";
+import { isLocalMode, shouldShowLocalModeFeatures } from "@/lib/config";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useEffect, useState } from "react";
@@ -27,7 +27,7 @@ export function LocalEnvManager() {
       const response = await backendApi.get('/admin/env-vars');
       return response.data;
     },
-    enabled: isLocalMode()
+    enabled: shouldShowLocalModeFeatures()
   });
 
   const { register, handleSubmit, formState: { errors, isDirty }, reset } = useForm<APIKeyForm>({
@@ -127,7 +127,7 @@ export function LocalEnvManager() {
     <CardHeader>
       <CardTitle>Local .Env Manager</CardTitle>
       <CardDescription>
-        {isLocalMode() ? (
+        {shouldShowLocalModeFeatures() ? (
           <>
             Manage your local environment variables
           </>
@@ -139,7 +139,7 @@ export function LocalEnvManager() {
       </CardDescription>
     </CardHeader>
 
-    {isLocalMode() && (
+    {shouldShowLocalModeFeatures() && (
         <CardContent>
             <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
                 {keysArray && keysArray?.map(key => (

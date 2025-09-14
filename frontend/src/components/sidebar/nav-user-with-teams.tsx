@@ -52,7 +52,7 @@ import {
 } from '@/components/ui/dialog';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from 'next-themes';
-import { isLocalMode } from '@/lib/config';
+import { isLocalMode, shouldShowLocalModeFeatures } from '@/lib/config';
 import { clearUserLocalStorage } from '@/lib/utils/clear-local-storage';
 import { BillingModal } from '@/components/billing/billing-modal';
 
@@ -316,7 +316,7 @@ export function NavUserWithTeams({
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {isLocalMode() && <DropdownMenuItem asChild>
+                {shouldShowLocalModeFeatures() && <DropdownMenuItem asChild>
                   <Link href="/settings/env-manager">
                     <KeyRound className="h-4 w-4" />
                     Local .Env Manager

@@ -1,0 +1,36 @@
+# Production Docker Compose Override
+# This file enables Caddy and configures services for production
+
+services:
+  # Enable Caddy in production mode
+  caddy:
+    profiles: []
+
+  # Configure frontend for production
+  frontend:
+    build:
+      args:
+        - NEXT_PUBLIC_URL=https://irisvision.ai
+        - NEXT_PUBLIC_APP_URL=https://irisvision.ai
+        - NEXT_PUBLIC_BACKEND_URL=https://irisvision.ai/api
+        - NEXT_PUBLIC_ENV_MODE=production
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_URL=https://irisvision.ai
+      - NEXT_PUBLIC_APP_URL=https://irisvision.ai
+      - NEXT_PUBLIC_BACKEND_URL=https://irisvision.ai/api
+      - NEXT_PUBLIC_ENV_MODE=production
+
+  # Configure backend for production
+  backend:
+    environment:
+      - ENV_MODE=production
+      - WEBHOOK_BASE_URL=https://irisvision.ai
+      - FRONTEND_URL=https://irisvision.ai
+
+  # Configure worker for production
+  worker:
+    environment:
+      - ENV_MODE=production
+      - WEBHOOK_BASE_URL=https://irisvision.ai
+      - FRONTEND_URL=https://irisvision.ai

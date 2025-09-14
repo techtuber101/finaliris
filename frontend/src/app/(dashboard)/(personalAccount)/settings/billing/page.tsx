@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useSharedSubscription } from '@/contexts/SubscriptionContext';
-import { isLocalMode } from '@/lib/config';
+import { isLocalMode, shouldDisableEnvUIChanges } from '@/lib/config';
 import Link from 'next/link';
 
 const returnUrl = process.env.NEXT_PUBLIC_URL as string;
@@ -81,7 +81,7 @@ export default function PersonalAccountBillingPage() {
       <div className="rounded-xl border shadow-sm bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Billing Status</h2>
 
-        {isLocalMode() ? (
+        {isLocalMode() && !shouldDisableEnvUIChanges() ? (
           <div className="p-4 mb-4 bg-muted/30 border border-border rounded-lg text-center">
             <p className="text-sm text-muted-foreground">
               Running in local development mode - billing features are disabled

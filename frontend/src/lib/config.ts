@@ -41,6 +41,8 @@ interface Config {
   IS_LOCAL: boolean;
   IS_STAGING: boolean;
   SUBSCRIPTION_TIERS: SubscriptionTiers;
+  // UI Configuration - set to true to disable environment-specific UI changes
+  DISABLE_ENV_UI_CHANGES: boolean;
 }
 
 // Production tier IDs
@@ -223,6 +225,8 @@ export const config: Config = {
   IS_STAGING: currentEnvMode === EnvMode.STAGING,
   SUBSCRIPTION_TIERS:
     currentEnvMode === EnvMode.STAGING ? STAGING_TIERS : PROD_TIERS,
+  // Disable environment-specific UI changes to maintain consistent look & feel
+  DISABLE_ENV_UI_CHANGES: true,
 };
 
 export const isLocalMode = (): boolean => {
@@ -231,6 +235,16 @@ export const isLocalMode = (): boolean => {
 
 export const isStagingMode = (): boolean => {
   return config.IS_STAGING;
+};
+
+// Helper function to check if environment-specific UI changes should be disabled
+export const shouldDisableEnvUIChanges = (): boolean => {
+  return config.DISABLE_ENV_UI_CHANGES;
+};
+
+// Helper function to check if we should show local mode features
+export const shouldShowLocalModeFeatures = (): boolean => {
+  return config.IS_LOCAL && !config.DISABLE_ENV_UI_CHANGES;
 };
 
 

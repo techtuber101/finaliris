@@ -27,7 +27,7 @@ import {
   CreateCheckoutSessionResponse,
 } from '@/lib/api';
 import { toast } from 'sonner';
-import { isLocalMode, isYearlyCommitmentDowngrade, isPlanChangeAllowed, getPlanInfo } from '@/lib/config';
+import { isLocalMode, isYearlyCommitmentDowngrade, isPlanChangeAllowed, getPlanInfo, shouldDisableEnvUIChanges } from '@/lib/config';
 import { useSubscription, useSubscriptionCommitment } from '@/hooks/react-query';
 import posthog from 'posthog-js';
 
@@ -651,7 +651,7 @@ export function PricingSection({
 
 
 
-  if (isLocalMode()) {
+  if (isLocalMode() && !shouldDisableEnvUIChanges()) {
     return (
       <div className="p-4 bg-muted/30 border border-border rounded-lg text-center">
         <p className="text-sm text-muted-foreground">

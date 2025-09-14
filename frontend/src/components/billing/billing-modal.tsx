@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { PricingSection } from '@/components/home/sections/pricing-section';
 import { CreditBalanceDisplay, CreditPurchaseModal } from '@/components/billing/credit-purchase';
-import { isLocalMode } from '@/lib/config';
+import { isLocalMode, shouldDisableEnvUIChanges } from '@/lib/config';
 import {
     getSubscription,
     createPortalSession,
@@ -209,8 +209,8 @@ export function BillingModal({ open, onOpenChange, returnUrl = typeof window !==
         }
     };
 
-    // Local mode content
-    if (isLocalMode()) {
+    // Local mode content - only show if UI changes are not disabled
+    if (isLocalMode() && !shouldDisableEnvUIChanges()) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

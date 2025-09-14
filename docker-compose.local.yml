@@ -1,25 +1,7 @@
-services:
-  # Caddy reverse proxy with SSL termination
-  caddy:
-    image: caddy:2-alpine
-    container_name: irisvision-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - /var/log/caddy:/var/log/caddy
-    networks:
-      - irisvision-network
-    depends_on:
-      - frontend
-      - backend
-    environment:
-      - CADDY_INGRESS_NETWORKS=irisvision-network
+# Local Development Docker Compose
+# This file excludes Caddy and configures services for local development
 
+services:
   redis:
     image: redis:7-alpine
     container_name: irisvision-redis
@@ -94,6 +76,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_URL=http://localhost:3000
+        - NEXT_PUBLIC_APP_URL=http://localhost:3000
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000/api
+        - NEXT_PUBLIC_ENV_MODE=local
     container_name: irisvision-frontend
     restart: unless-stopped
     ports:
@@ -101,6 +88,12 @@ services:
     # Load runtime environment variables (including Supabase) for the Next.js server
     env_file:
       - ./frontend/.env.local
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_URL=http://localhost:3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000/api
+      - NEXT_PUBLIC_ENV_MODE=local
     networks:
       - irisvision-network
     depends_on:
@@ -112,5 +105,3 @@ networks:
 
 volumes:
   redis_data:
-  caddy_data:
-  caddy_config:
