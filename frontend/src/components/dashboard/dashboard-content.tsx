@@ -239,23 +239,19 @@ export function DashboardContent() {
       chatInputRef.current?.clearPendingFiles();
     } catch (error: any) {
       console.error('Error during submission process:', error);
-      // TEMPORARILY DISABLED FOR TESTING - Never show billing or limit errors
-      console.log("Billing and limit error handling disabled for testing:", error);
-      
-      // Original error handling commented out for testing
-      // if (error instanceof BillingError) {
-      //   setShowPaymentModal(true);
-      // } else if (error instanceof AgentRunLimitError) {
-      //   const { running_thread_ids, running_count } = error.detail;
-      //   setAgentLimitData({
-      //     runningCount: running_count,
-      //     runningThreadIds: running_thread_ids,
-      //   });
-      //   setShowAgentLimitDialog(true);
-      // } else {
+      if (error instanceof BillingError) {
+        setShowPaymentModal(true);
+      } else if (error instanceof AgentRunLimitError) {
+        const { running_thread_ids, running_count } = error.detail;
+        setAgentLimitData({
+          runningCount: running_count,
+          runningThreadIds: running_thread_ids,
+        });
+        setShowAgentLimitDialog(true);
+      } else {
         const errorMessage = error instanceof Error ? error.message : 'Operation failed';
         toast.error(errorMessage);
-      // }
+      }
       // Only reset loading state if there was an error or no thread_id was returned
       setIsSubmitting(false);
     }
@@ -361,12 +357,11 @@ export function DashboardContent() {
         onDecline={handleWelcomeDecline}
       />
 
-      {/* TEMPORARILY DISABLED FOR TESTING - Never show billing modals */}
-      {/* <BillingModal 
+      <BillingModal 
         open={showPaymentModal} 
         onOpenChange={setShowPaymentModal}
         showUsageLimitAlert={true}
-      /> */}
+      />
       <div className="flex flex-col h-screen w-full overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full flex flex-col">
@@ -431,8 +426,7 @@ export function DashboardContent() {
         /> */}
       </div>
 
-      {/* TEMPORARILY DISABLED FOR TESTING - Never show agent limit dialogs */}
-      {/* {agentLimitData && (
+      {agentLimitData && (
         <AgentRunLimitDialog
           open={showAgentLimitDialog}
           onOpenChange={setShowAgentLimitDialog}
@@ -440,7 +434,7 @@ export function DashboardContent() {
           runningThreadIds={agentLimitData.runningThreadIds}
           projectId={undefined}
         />
-      )} */}
+      )}
     </>
   );
 }

@@ -17,6 +17,7 @@ from litellm.router import Router
 from litellm.files.main import ModelResponse
 from core.utils.logger import logger
 from core.utils.config import config
+from core.services.geminiCache import gemini_cache_service
 
 # litellm.set_verbose=True
 # Let LiteLLM auto-adjust params and drop unsupported ones (e.g., GPT-5 temperature!=1)
@@ -139,6 +140,151 @@ def _configure_token_limits(params: Dict[str, Any], model_name: str, max_tokens:
     is_openai_gpt5 = 'gpt-5' in model_name
     param_name = "max_completion_tokens" if (is_openai_o_series or is_openai_gpt5) else "max_tokens"
     params[param_name] = max_tokens
+
+def _is_gemini_model(model_name: str) -> bool:
+    """Check if the model is a Gemini model."""
+    return "gemini" in model_name.lower()
+
+def _extract_system_instruction(messages: List[Dict[str, Any]]) -> Optional[str]:
+    """Extract system instruction from messages."""
+    for message in messages:
+        if isinstance(message, dict) and message.get('role') == 'system':
+            content = message.get('content', '')
+            if isinstance(content, str):
+                return content
+            elif isinstance(content, list):
+                # Extract text from content parts
+                text_parts = []
+                for part in content:
+                    if isinstance(part, dict) and part.get('type') == 'text':
+                        text_parts.append(part.get('text', ''))
+                return ''.join(text_parts)
+    return None
+
+def _separate_stable_prefix_and_user_content(messages: List[Dict[str, Any]]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Separate stable prefix (system + first few messages) from user content."""
+    stable_prefix = []
+    user_content = []
+    
+    # Always include system message in stable prefix
+    for message in messages:
+        if isinstance(message, dict) and message.get('role') == 'system':
+            stable_prefix.append(message)
+        else:
+            user_content.append(message)
+    
+    return stable_prefix, user_content
+
+async def _handle_gemini_caching(
+    messages: List[Dict[str, Any]],
+    model_name: str,
+    tools: Optional[List[Dict[str, Any]]] = None
+) -> tuple[List[Dict[str, Any]], Optional[str]]:
+    """
+    Handle Gemini caching for stable prefixes.
+    
+    Returns:
+        Tuple of (modified_messages, cache_name)
+    """
+    if not _is_gemini_model(model_name):
+        return messages, None
+    
+    try:
+        # Extract system instruction
+        system_instruction = _extract_system_instruction(messages)
+        
+        # Separate stable prefix from user content
+        stable_prefix, user_content = _separate_stable_prefix_and_user_content(messages)
+        
+        if not stable_prefix:
+            logger.debug("No stable prefix found, skipping Gemini caching")
+            return messages, None
+        
+        # Convert stable prefix to Gemini content format
+        prefix_contents = []
+        for message in stable_prefix:
+            if isinstance(message, dict):
+                content = message.get('content', '')
+                if isinstance(content, str):
+                    prefix_contents.append({"role": message.get('role', 'user'), "parts": [{"text": content}]})
+                elif isinstance(content, list):
+                    parts = []
+                    for part in content:
+                        if isinstance(part, dict) and part.get('type') == 'text':
+                            parts.append({"text": part.get('text', '')})
+                    if parts:
+                        prefix_contents.append({"role": message.get('role', 'user'), "parts": parts})
+        
+        if not prefix_contents:
+            logger.debug("No valid prefix contents found, skipping Gemini caching")
+            return messages, None
+        
+        # Get or create cache
+        cache_name = await gemini_cache_service.get_or_create_prefix_cache(
+            model=model_name,
+            contents=prefix_contents,
+            system_instruction=system_instruction,
+            tools=tools,
+            ttl_seconds=86400  # 24 hours
+        )
+        
+        if cache_name:
+            logger.info(f"Using Gemini cache {cache_name} for model {model_name}")
+            # Return only user content with cache reference
+            return user_content, cache_name
+        else:
+            logger.debug("Failed to create Gemini cache, proceeding without caching")
+            return messages, None
+            
+    except Exception as e:
+        logger.error(f"Error handling Gemini caching: {e}", exc_info=True)
+        return messages, None
+
+def _log_gemini_usage_metadata(response: Any, model_name: str, cache_name: Optional[str] = None) -> None:
+    """Log Gemini usage metadata including cached token information."""
+    if not _is_gemini_model(model_name):
+        return
+    
+    try:
+        # Check for usage metadata in different response formats
+        usage_metadata = None
+        
+        if hasattr(response, 'usage_metadata') and response.usage_metadata:
+            usage_metadata = response.usage_metadata
+        elif hasattr(response, 'usage') and response.usage:
+            usage_metadata = response.usage
+        elif isinstance(response, dict) and 'usage_metadata' in response:
+            usage_metadata = response['usage_metadata']
+        elif isinstance(response, dict) and 'usage' in response:
+            usage_metadata = response['usage']
+        
+        if usage_metadata:
+            # Extract token counts
+            cached_tokens = getattr(usage_metadata, 'cached_content_token_count', 0)
+            prompt_tokens = getattr(usage_metadata, 'prompt_token_count', 0)
+            candidates_tokens = getattr(usage_metadata, 'candidates_token_count', 0)
+            total_tokens = getattr(usage_metadata, 'total_token_count', 0)
+            
+            # Log cache usage
+            if cache_name:
+                logger.info(f"🔗 Using Gemini cache: {cache_name}")
+            
+            # Log token breakdown
+            if cached_tokens > 0:
+                savings_percent = (cached_tokens / (prompt_tokens + cached_tokens)) * 100 if (prompt_tokens + cached_tokens) > 0 else 0
+                logger.info(f"🚀 Gemini Cache Hit! Cached tokens: {cached_tokens} ({savings_percent:.1f}% savings)")
+                logger.info(f"📊 Token breakdown - Prompt: {prompt_tokens}, "
+                           f"Candidates: {candidates_tokens}, Cached: {cached_tokens}")
+            else:
+                logger.info(f"📊 Token breakdown - Prompt: {prompt_tokens}, "
+                           f"Candidates: {candidates_tokens}, Cached: {cached_tokens}")
+            
+            # Log total tokens if available
+            if total_tokens > 0:
+                logger.info(f"💰 Total tokens: {total_tokens}")
+                
+    except Exception as e:
+        logger.debug(f"Could not extract usage metadata from response: {e}")
 
 def _apply_anthropic_caching(messages: List[Dict[str, Any]]) -> None:
     """Apply Anthropic caching to the messages."""
@@ -385,6 +531,18 @@ async def make_llm_api_call(
     # debug <timestamp>.json messages
     logger.debug(f"Making LLM API call to model: {model_name} (Thinking: {enable_thinking}, Effort: {reasoning_effort})")
     logger.debug(f"📡 API Call: Using model {model_name}")
+    
+    # Handle Gemini caching
+    cache_name = None
+    if _is_gemini_model(model_name):
+        try:
+            messages, cache_name = await _handle_gemini_caching(messages, model_name, tools)
+            if cache_name:
+                logger.info(f"Using Gemini cache: {cache_name}")
+        except Exception as e:
+            logger.error(f"Error in Gemini caching: {e}", exc_info=True)
+            # Continue without caching
+    
     params = prepare_params(
         messages=messages,
         model_name=model_name,
@@ -401,10 +559,24 @@ async def make_llm_api_call(
         enable_thinking=enable_thinking,
         reasoning_effort=reasoning_effort,
     )
+    
+    # Add Gemini cache configuration if available
+    if cache_name and _is_gemini_model(model_name):
+        params["cached_content"] = cache_name
+        # Remove system instruction and tools from params when using cached content
+        if "system" in params:
+            del params["system"]
+        if "tools" in params:
+            del params["tools"]
+        logger.debug(f"Added cached_content parameter: {cache_name}")
+    
     try:
         response = await provider_router.acompletion(**params)
         logger.debug(f"Successfully received API response from {model_name}")
-        # logger.debug(f"Response: {response}")
+        
+        # Log cached token information if available
+        _log_gemini_usage_metadata(response, model_name, cache_name)
+        
         return response
 
     except Exception as e:
